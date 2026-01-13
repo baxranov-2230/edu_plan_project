@@ -11,4 +11,5 @@ class Department(Base):
     description: Mapped[str | None] = mapped_column(nullable=True)
     
     # Optional: Relationship back to Faculty if needed
-    # faculty = relationship("Faculty", back_populates="departments")
+    # Relationships
+    specialities = relationship("Speciality", back_populates="department")

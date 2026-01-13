@@ -12,6 +12,11 @@ import Classes from "../pages/Classes";
 import Faculties from "../pages/Faculties";
 import Departments from "../pages/Departments";
 import Roles from "../pages/Roles";
+import Specialities from "../pages/Specialities";
+import Groups from "../pages/Groups";
+import Teachers from "../pages/Teachers";
+import Streams from "../pages/Streams";
+import Workloads from "../pages/Workloads";
 import useAuthStore from "../store/authStore";
 
 const ProtectedRoute = ({ children }) => {
@@ -88,6 +93,26 @@ const router = createBrowserRouter([
       {
         path: "roles",
         element: <Roles />,
+      },
+      {
+        path: "specialities",
+        element: <Specialities />,
+      },
+      {
+        path: "groups",
+        element: <Groups />,
+      },
+      {
+        path: "teachers",
+        element: <Teachers />,
+      },
+      {
+        path: "streams",
+        element: <Streams />,
+      },
+      {
+        path: "workloads",
+        element: <Workloads />,
       },
     ],
   },

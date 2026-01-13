@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   Box,
   List,
@@ -22,21 +22,31 @@ import ClassIcon from '@mui/icons-material/Class';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import LockPersonIcon from '@mui/icons-material/LockPerson';
+import GroupIcon from '@mui/icons-material/Group';
+import PersonIcon from '@mui/icons-material/Person';
+import ViewStreamIcon from '@mui/icons-material/ViewStream';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import useAuthStore from '../store/authStore';
 import useLayoutStore from '../store/layoutStore';
 
 const Sidebar = () => {
   const { user } = useAuthStore();
   const { sidebarOpen, toggleSidebar } = useLayoutStore();
+  const location = useLocation();
 
   const menuItems = [
     { text: 'Bosh sahifa', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: "O'quv rejalar", icon: <SchoolIcon />, path: '/curriculums' },
-    { text: 'Yuklamalar', icon: <ArticleIcon />, path: '/downloads' },
-    { text: 'Fan dasturlari', icon: <ClassIcon />, path: '/programs' },
+    { text: "Fanlar", icon: <SchoolIcon />, path: '/curriculums' },
+    // { text: 'Fayllar', icon: <ArticleIcon />, path: '/downloads' },
+    // { text: 'Fan dasturlari', icon: <ClassIcon />, path: '/programs' },
     { text: 'Xodimlar', icon: <PeopleIcon />, path: '/users' },
     { text: 'Fakultetlar', icon: <SchoolIcon />, path: '/faculties' },
     { text: 'Kafedralar', icon: <SchoolIcon />, path: '/departments' },
+    { text: 'Mutaxassisliklar', icon: <SchoolIcon />, path: '/specialities' },
+    { text: 'Guruhlar', icon: <GroupIcon />, path: '/groups' },
+    { text: "O'qituvchilar", icon: <PersonIcon />, path: '/teachers' },
+    { text: 'Potoklar', icon: <ViewStreamIcon />, path: '/streams' },
+    { text: 'Yuklamalar', icon: <AssignmentIcon />, path: '/workloads' },
     { text: 'Rollar', icon: <LockPersonIcon />, path: '/roles' },
     { text: 'Sozlamalar', icon: <SettingsIcon />, path: '/settings' },
   ];
@@ -75,16 +85,16 @@ const Sidebar = () => {
         </Typography>
       </Box>
 
-      <List className="flex-grow px-3">
+      <List className="flex-grow px-3 overflow-y-auto overflow-x-hidden custom-scrollbar">
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding className="mb-2 block">
             <Tooltip title={!sidebarOpen ? item.text : ''} placement="right" arrow>
               <NavLink
                 to={item.path}
-                className={({ isActive }) =>
+                className={() =>
                   `flex items-center rounded-xl text-sm font-medium transition-all duration-200 group no-underline relative overflow-hidden
-                   ${isActive
-                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 shadow-sm'
+                   ${location.pathname.startsWith(item.path)
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20' 
                     : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
                   }`
                 }

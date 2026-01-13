@@ -35,6 +35,12 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import DownloadIcon from '@mui/icons-material/Download';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import { useGroups } from '../hooks/useGroups';
+import { useCurriculums } from '../hooks/useCurriculums';
+import { useWorkloads } from '../hooks/useWorkloads';
+import { useSpecialities } from '../hooks/useSpecialities';
+import { useDepartments } from '../hooks/useDepartments';
+import { useFaculties } from '../hooks/useFaculties';
 
 // Mock Data for Charts
 const studentData = [
@@ -95,8 +101,39 @@ const StatCard = ({ title, value, icon, color, gradient, trend }) => (
   </Paper>
 );
 
+// Mock Data for Charts
+
 const Dashboard = () => {
-  const currentDate = new Date().toLocaleDateString('uz-UZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const currentDate = new Date().toLocaleDateString('uz-UZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    
+    // Fetch stats
+    const { data: groupsData } = useGroups({ page: 1, size: 1 });
+    const { data: curriculumsData } = useCurriculums({ page: 1, size: 1 });
+    // Fetch more workloads to calculate unique curriculums/plans
+    const { data: workloadsData } = useWorkloads({ page: 1, size: 1000 });
+    const { data: specialitiesData } = useSpecialities({ page: 1, size: 1 });
+    const { data: departmentsData } = useDepartments();
+    const { data: facultiesData } = useFaculties();
+
+    const totalGroups = groupsData?.total || 0;
+    // Mapping "Fan Dasturlari" to Curriculums as they represent Subjects
+    const totalCurriculums = curriculumsData?.total || 0; 
+    const totalHours = workloadsData?.items?.reduce((acc, curr) => acc + (Number(curr.hours) || 0), 0) || 0;
+    // Mapping "O'quv Rejalar" to Specialities as roughly representing plans
+    const totalSpecialities = specialitiesData?.total || 0;
+
+    // Helper to get faculty name
+    const getFacultyName = (workload) => {
+        if (!workload.curriculum?.department_id) return 'Noma\'lum';
+        // Check if departmentsData is array or object with items
+        const depts = Array.isArray(departmentsData) ? departmentsData : (departmentsData?.items || []);
+        const dept = depts.find(d => d.id === workload.curriculum.department_id);
+        if (!dept?.faculty_id) return 'Noma\'lum';
+        
+        const faculties = Array.isArray(facultiesData) ? facultiesData : (facultiesData?.items || []);
+        const faculty = faculties.find(f => f.id === dept.faculty_id);
+        return faculty?.name || 'Noma\'lum';
+    };
 
   return (
     <Box className="animate-fade-in">
@@ -112,7 +149,7 @@ const Dashboard = () => {
         <Button
           variant="contained"
           startIcon={<DownloadIcon />}
-          className="bg-slate-900 text-white hover:bg-slate-800 capitalize rounded-xl shadow-lg shadow-slate-900/20 px-6"
+          className="bg-slate-900 text-white hover:bg-slate-800 capitalize rounded-xl shadow-lg shadow-slate-900/20 px-6 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:shadow-emerald-500/20"
         >
           Hisobotni yuklash
         </Button>
@@ -123,17 +160,17 @@ const Dashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Guruhlar"
-            value="24"
+            value={totalGroups} // Real data
             icon={<GroupsIcon />}
             color="#0ea5e9"
             gradient="bg-gradient-to-br from-cyan-400 to-blue-500"
-            trend="+12%"
+            trend="+12%" // Keeping mock trend for now
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="O'quv rejalar"
-            value="12"
+            value={workloadsData?.items ? new Set(workloadsData.items.map(w => w.curriculum_id)).size : 0} // Unique subjects in workloads
             icon={<AssignmentIcon />}
             color="#8b5cf6"
             gradient="bg-gradient-to-br from-violet-400 to-purple-500"
@@ -142,8 +179,8 @@ const Dashboard = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="Fan dasturlari"
-            value="48"
+            title="Mutaxasis va ixtisosliklar"
+            value={totalSpecialities} // Mapping Specialities
             icon={<ClassIcon />}
             color="#f59e0b"
             gradient="bg-gradient-to-br from-amber-400 to-orange-500"
@@ -153,7 +190,7 @@ const Dashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Yuklamalar"
-            value="156"
+            value={totalHours} // Real data (Total Hours)
             icon={<DownloadIcon />}
             color="#10b981"
             gradient="bg-gradient-to-br from-emerald-400 to-green-500"
@@ -191,12 +228,24 @@ const Dashboard = () => {
         {/* Donut Chart */}
         <Grid item xs={12} lg={4}>
           <Paper elevation={0} className="p-6 rounded-2xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 h-[400px] shadow-sm flex flex-col">
-            <Typography variant="h6" className="font-bold text-slate-800 dark:text-slate-100 mb-4">Yo'nalishlar bo'yicha</Typography>
+            <Typography variant="h6" className="font-bold text-slate-800 dark:text-slate-100 mb-4">Yuklamalar soati (Fakultetlar kesimida)</Typography>
             <Box className="flex-grow">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={subjectData}
+                    data={
+                      workloadsData?.items 
+                        ? Object.entries(workloadsData.items.reduce((acc, curr) => {
+                            // Group by Faculty Name
+                            const name = getFacultyName(curr);
+                            acc[name] = (acc[name] || 0) + (Number(curr.hours) || 0);
+                            return acc;
+                          }, {}))
+                          .map(([name, value]) => ({ name, value }))
+                          .sort((a, b) => b.value - a.value)
+                          .slice(0, 5) // Top 5
+                        : subjectData 
+                    }
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -204,7 +253,15 @@ const Dashboard = () => {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {subjectData.map((entry, index) => (
+                    {/* Colors need to map to data length */}
+                    {(workloadsData?.items 
+                        ? Object.entries(workloadsData.items.reduce((acc, curr) => {
+                             const name = getFacultyName(curr);
+                             acc[name] = (acc[name] || 0) + (Number(curr.hours) || 0);
+                             return acc;
+                          }, {})).slice(0, 5)
+                        : subjectData
+                    ).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

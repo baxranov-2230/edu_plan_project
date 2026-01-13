@@ -182,14 +182,14 @@ const Users = () => {
   );
 
   return (
-    <Box className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-screen">
+    <Box className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-screen dark:bg-slate-950">
       {/* Header Section */}
       <Box className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <Box>
-          <Typography variant="h4" className="font-extrabold text-slate-800 tracking-tight" sx={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <Typography variant="h4" className="font-extrabold text-slate-800 tracking-tight dark:text-white" sx={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Xodimlar
           </Typography>
-          <Typography variant="body1" className="text-slate-500 mt-2 font-medium">
+          <Typography variant="body1" className="text-slate-500 mt-2 font-medium dark:text-slate-400">
             Tizim foydalanuvchilarini boshqarish va nazorat qilish
           </Typography>
         </Box>
@@ -205,12 +205,12 @@ const Users = () => {
       </Box>
 
       {/* Toolbar & Filter */}
-      <Card elevation={0} className="mb-8 rounded-3xl border border-slate-200/60 p-1.5 bg-white shadow-sm flex items-center gap-2">
-        <Box className="flex-1 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl px-4 py-2.5 flex items-center border border-transparent focus-within:border-emerald-500/30 focus-within:bg-white focus-within:shadow-sm">
+      <Card elevation={0} className="mb-8 rounded-3xl border border-slate-200/60 p-1.5 bg-white shadow-sm flex items-center gap-2 dark:bg-slate-900 dark:border-slate-800">
+        <Box className="flex-1 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl px-4 py-2.5 flex items-center border border-transparent focus-within:border-emerald-500/30 focus-within:bg-white focus-within:shadow-sm dark:bg-slate-800 dark:hover:bg-slate-750 dark:focus-within:bg-slate-800">
           <SearchIcon className="text-slate-400 mr-3" />
           <InputBase
             placeholder="Qidirish (Ism, Email, JSHSHIR)..."
-            className="w-full font-medium text-slate-700 placeholder:text-slate-400"
+            className="w-full font-medium text-slate-700 placeholder:text-slate-400 dark:text-slate-200"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -218,17 +218,17 @@ const Users = () => {
         <Button
           variant="text"
           startIcon={<FilterListIcon />}
-          className="text-slate-600 hover:bg-slate-50 rounded-xl px-4 py-2.5 font-semibold normal-case"
+          className="text-slate-600 hover:bg-slate-50 rounded-xl px-4 py-2.5 font-semibold normal-case dark:text-slate-400 dark:hover:bg-slate-800"
         >
           Filterlash
         </Button>
       </Card>
 
       {/* Users Table */}
-      <TableContainer component={Paper} elevation={0} className="rounded-3xl border border-slate-200/60 shadow-lg shadow-slate-200/40 overflow-hidden bg-white">
+      <TableContainer component={Paper} elevation={0} className="rounded-3xl border border-slate-200/60 shadow-lg shadow-slate-200/40 overflow-hidden bg-white dark:bg-slate-900 dark:border-slate-800 dark:shadow-none">
         <Table sx={{ minWidth: 650 }} aria-label="users table">
           <TableHead>
-            <TableRow className="bg-slate-50/80 border-b border-slate-100">
+            <TableRow className="bg-slate-50/80 border-b border-slate-100 dark:bg-slate-800/80 dark:border-slate-700">
               <TableCell className="font-bold text-slate-400 text-xs uppercase tracking-wider pl-8 py-5">Foydalanuvchi</TableCell>
               <TableCell className="font-bold text-slate-400 text-xs uppercase tracking-wider py-5">Ma'lumotlar</TableCell>
               <TableCell className="font-bold text-slate-400 text-xs uppercase tracking-wider py-5">Lavozim</TableCell>
@@ -255,7 +255,7 @@ const Users = () => {
                 <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
                   <Box className="flex flex-col items-center opacity-60">
                     <PersonIcon sx={{ fontSize: 48, color: '#cbd5e1' }} />
-                    <Typography className="text-slate-500 mt-2 font-medium">Hech narsa topilmadi</Typography>
+                    <Typography className="text-slate-500 mt-2 font-medium dark:text-slate-400">Hech narsa topilmadi</Typography>
                   </Box>
                 </TableCell>
               </TableRow>
@@ -265,7 +265,7 @@ const Users = () => {
                 return (
                   <TableRow
                     key={user.id}
-                    className="hover:bg-slate-50/50 transition-colors group"
+                    className="hover:bg-slate-50/50 transition-colors group dark:hover:bg-slate-800/50"
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
                     {/* User Column */}
@@ -280,13 +280,13 @@ const Users = () => {
                             fontSize: '1.25rem',
                             fontWeight: 'bold'
                           }}
-                          className="shadow-md ring-4 ring-white"
+                          className="shadow-md ring-4 ring-white dark:ring-slate-700"
                         >
                           {user.name?.[0]?.toUpperCase()}
                         </Avatar>
                         <Box>
-                          <Typography variant="body2" className="font-bold text-slate-800 text-base">{user.name}</Typography>
-                          <Typography variant="caption" className="text-slate-500 font-medium">{user.email}</Typography>
+                          <Typography variant="body2" className="font-bold text-slate-800 text-base dark:text-slate-200">{user.name}</Typography>
+                          <Typography variant="caption" className="text-slate-500 font-medium dark:text-slate-400">{user.email}</Typography>
                         </Box>
                       </Box>
                     </TableCell>
@@ -295,19 +295,19 @@ const Users = () => {
                     <TableCell className="py-4">
                       <Box className="flex flex-col gap-1.5">
                         {user.passport_series && (
-                          <Box className="flex items-center gap-2 text-slate-600">
+                          <Box className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                             <BadgeIcon fontSize="inherit" className="text-slate-400" />
                             <Typography variant="caption" className="font-semibold">{user.passport_series}</Typography>
                           </Box>
                         )}
                         {user.jshshir && (
-                          <Box className="flex items-center gap-2 text-slate-600">
+                          <Box className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                             <FingerprintIcon fontSize="inherit" className="text-slate-400" />
                             <Typography variant="caption" className="font-mono">{user.jshshir}</Typography>
                           </Box>
                         )}
                         {user.phone_number && (
-                          <Box className="flex items-center gap-2 text-slate-600">
+                          <Box className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                             <PhoneIcon fontSize="inherit" className="text-slate-400" />
                             <Typography variant="caption" className="font-medium">{user.phone_number}</Typography>
                           </Box>
@@ -346,7 +346,7 @@ const Users = () => {
                         <Tooltip title="Tahrirlash">
                           <IconButton
                             size="small"
-                            className="bg-white border border-slate-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 rounded-xl transition-all shadow-sm"
+                            className="bg-white border border-slate-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 rounded-xl transition-all shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400"
                             onClick={() => handleOpen(user)}
                           >
                             <EditIcon fontSize="small" />
@@ -355,7 +355,7 @@ const Users = () => {
                         <Tooltip title="O'chirish">
                           <IconButton
                             size="small"
-                            className="bg-white border border-slate-200 hover:bg-red-50 hover:border-red-200 hover:text-red-500 rounded-xl transition-all shadow-sm"
+                            className="bg-white border border-slate-200 hover:bg-red-50 hover:border-red-200 hover:text-red-500 rounded-xl transition-all shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-red-900/30 dark:hover:text-red-400"
                             onClick={() => handleDelete(user.id)}
                           >
                             <DeleteIcon fontSize="small" />
@@ -378,11 +378,11 @@ const Users = () => {
         maxWidth="md"
         fullWidth
         PaperProps={{
-          className: "rounded-3xl p-2",
+          className: "rounded-3xl p-2 dark:bg-slate-900 dark:text-white",
           elevation: 24
         }}
       >
-        <DialogTitle className="font-bold text-slate-800 text-xl pb-1">
+        <DialogTitle className="font-bold text-slate-800 text-xl pb-1 dark:text-white">
           {editMode ? 'Xodimni Tahrirlash' : 'Yangi Xodim'}
         </DialogTitle>
         <form onSubmit={handleSubmit}>
@@ -399,8 +399,9 @@ const Users = () => {
                   fullWidth
                   required
                   variant="outlined"
-                  className="bg-slate-50 rounded-xl"
-                  InputProps={{ className: "rounded-xl" }}
+                  className="bg-slate-50 rounded-xl dark:bg-slate-800"
+                  InputProps={{ className: "rounded-xl dark:text-white" }}
+                  InputLabelProps={{ className: "dark:text-slate-400" }}
                   value={formData.name}
                   onChange={handleChange}
                 />
@@ -412,8 +413,9 @@ const Users = () => {
                   type="email"
                   fullWidth
                   required
-                  className="bg-slate-50 rounded-xl"
-                  InputProps={{ className: "rounded-xl" }}
+                  className="bg-slate-50 rounded-xl dark:bg-slate-800"
+                  InputProps={{ className: "rounded-xl dark:text-white" }}
+                  InputLabelProps={{ className: "dark:text-slate-400" }}
                   value={formData.email}
                   onChange={handleChange}
                 />
@@ -423,8 +425,9 @@ const Users = () => {
                   name="phone_number"
                   label="Telefon Raqam"
                   fullWidth
-                  className="bg-slate-50 rounded-xl"
-                  InputProps={{ className: "rounded-xl" }}
+                  className="bg-slate-50 rounded-xl dark:bg-slate-800"
+                  InputProps={{ className: "rounded-xl dark:text-white" }}
+                  InputLabelProps={{ className: "dark:text-slate-400" }}
                   value={formData.phone_number}
                   onChange={handleChange}
                 />
@@ -442,8 +445,9 @@ const Users = () => {
                   fullWidth
                   required
                   helperText="Format: AA1234567"
-                  className="bg-slate-50 rounded-xl"
-                  InputProps={{ className: "rounded-xl" }}
+                  className="bg-slate-50 rounded-xl dark:bg-slate-800"
+                  InputProps={{ className: "rounded-xl dark:text-white" }}
+                  InputLabelProps={{ className: "dark:text-slate-400" }}
                   value={formData.passport_series}
                   onChange={handleChange}
                 />
@@ -455,8 +459,9 @@ const Users = () => {
                   fullWidth
                   required
                   helperText="14 raqam"
-                  className="bg-slate-50 rounded-xl"
-                  InputProps={{ className: "rounded-xl" }}
+                  className="bg-slate-50 rounded-xl dark:bg-slate-800"
+                  InputProps={{ className: "rounded-xl dark:text-white" }}
+                  InputLabelProps={{ className: "dark:text-slate-400" }}
                   value={formData.jshshir}
                   onChange={handleChange}
                 />
@@ -464,18 +469,18 @@ const Users = () => {
 
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
-                  <InputLabel>Roles</InputLabel>
+                  <InputLabel className="dark:text-slate-400">Roles</InputLabel>
                   <Select
                     name="roles"
                     multiple
                     value={formData.roles}
                     label="Roles"
                     onChange={handleChange}
-                    className="bg-slate-50 rounded-xl"
+                    className="bg-slate-50 rounded-xl dark:bg-slate-800 dark:text-white"
                     renderValue={(selected) => (
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                         {selected.map((value) => (
-                          <Chip key={value} label={value} size="small" />
+                          <Chip key={value} label={value} size="small" className="dark:bg-slate-600 dark:text-white" />
                         ))}
                       </Box>
                     )}
@@ -489,13 +494,13 @@ const Users = () => {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
-                  <InputLabel>Kafedra</InputLabel>
+                  <InputLabel className="dark:text-slate-400">Kafedra</InputLabel>
                   <Select
                     name="department_id"
                     value={formData.department_id}
                     label="Kafedra"
                     onChange={handleChange}
-                    className="bg-slate-50 rounded-xl"
+                    className="bg-slate-50 rounded-xl dark:bg-slate-800 dark:text-white"
                   >
                     <MenuItem value="">Tanlang</MenuItem>
                     {departments?.map(dept => (
@@ -511,8 +516,9 @@ const Users = () => {
                   type="password"
                   fullWidth
                   helperText={editMode ? "O'zgartirmaslik uchun bo'sh qoldiring" : "Bo'sh qoldirilsa Passport seriya bo'ladi"}
-                  className="bg-slate-50 rounded-xl"
-                  InputProps={{ className: "rounded-xl" }}
+                  className="bg-slate-50 rounded-xl dark:bg-slate-800"
+                  InputProps={{ className: "rounded-xl dark:text-white" }}
+                  InputLabelProps={{ className: "dark:text-slate-400" }}
                   value={formData.password}
                   onChange={handleChange}
                 />
@@ -520,7 +526,7 @@ const Users = () => {
             </Grid>
           </DialogContent>
           <DialogActions className="p-4 px-6">
-            <Button onClick={handleClose} className="text-slate-500 hover:bg-slate-100 rounded-xl px-4 normal-case font-bold">
+            <Button onClick={handleClose} className="text-slate-500 hover:bg-slate-100 rounded-xl px-4 normal-case font-bold dark:text-slate-400 dark:hover:bg-slate-800">
               Bekor qilish
             </Button>
             <Button
