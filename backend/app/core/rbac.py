@@ -53,5 +53,13 @@ ROLE_PERMISSIONS: Dict[str, List[str]] = {
     ]
 }
 
-def get_role_permissions(role: str) -> List[str]:
-    return ROLE_PERMISSIONS.get(role, [])
+def get_role_permissions(roles: str | List[str]) -> List[str]:
+    if isinstance(roles, str):
+        return ROLE_PERMISSIONS.get(roles, [])
+    
+    # If list, merge unique permissions
+    permissions = set()
+    for role in roles:
+        role_perms = ROLE_PERMISSIONS.get(role, [])
+        permissions.update(role_perms)
+    return list(permissions)

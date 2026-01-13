@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import EmailIcon from '@mui/icons-material/Email';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import LockIcon from '@mui/icons-material/Lock';
 import { toast } from 'react-toastify';
 import useAuthStore from '../store/authStore';
@@ -39,9 +39,15 @@ const Login = () => {
     onSubmit: async (values) => {
       setLoading(true);
       try {
-        await login(values.username, values.password);
-        toast.success('Welcome back!');
-        navigate('/dashboard');
+        const success = await login(values.username, values.password);
+        if (success) {
+          toast.success('Welcome back!');
+          navigate('/dashboard');
+        } else {
+          // Error is handled in store and displayed via another mechanism, or we can toast here if store exposes error
+          const errorMsg = useAuthStore.getState().error;
+          toast.error(errorMsg || 'Login failed');
+        }
       } catch (error) {
         toast.error(`Login failed: ${error.message}`);
       } finally {
@@ -86,7 +92,7 @@ const Login = () => {
                 fullWidth
                 id="username"
                 name="username"
-                placeholder="Username"
+                placeholder="JSHSHIR / Email"
                 variant="outlined"
                 value={formik.values.username}
                 onChange={formik.handleChange}
@@ -95,7 +101,7 @@ const Login = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <EmailIcon className="text-gray-400" />
+                      <FingerprintIcon className="text-gray-400" />
                     </InputAdornment>
                   ),
                   className: "bg-gray-900/50 text-white rounded-xl hover:bg-gray-900/70 transition-colors",

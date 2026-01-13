@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, EmailStr
+from app.schemas.role import Role
 
 # Shared properties
 class UserBase(BaseModel):
@@ -7,12 +8,21 @@ class UserBase(BaseModel):
     name: Optional[str] = None
     is_active: Optional[bool] = True
     is_superuser: bool = False
-    role: str = "student"
+    is_superuser: bool = False
+    roles: List[str] = ["student"]
+    passport_series: Optional[str] = None
+    jshshir: Optional[str] = None
+    username: Optional[str] = None
+    phone_number: Optional[str] = None
+    department_id: Optional[int] = None
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     email: EmailStr
-    password: str
+    password: Optional[str] = None
+    passport_series: str
+    jshshir: str
+    phone_number: str
 
 # Properties to receive via API on public registration
 class UserRegister(BaseModel):
@@ -32,6 +42,7 @@ class UserLogin(BaseModel):
 # Properties to return to client
 class User(UserBase):
     id: int
+    roles: List[Role] = []
 
     class Config:
         from_attributes = True

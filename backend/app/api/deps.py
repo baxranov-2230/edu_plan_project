@@ -68,7 +68,7 @@ class PermissionChecker:
         if user.is_superuser:
             return user
             
-        user_permissions = get_role_permissions(user.role)
+        user_permissions = get_role_permissions([r.name for r in user.roles])
         if self.required_permission not in user_permissions:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

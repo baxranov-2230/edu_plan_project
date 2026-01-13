@@ -10,7 +10,7 @@ const userApi = {
         return response.data;
     },
     update: async (id, data) => {
-        const response = await api.put(`/users/${id}`, data);
+        const response = await api.patch(`/users/${id}`, data);
         return response.data;
     },
     delete: async (id) => {
