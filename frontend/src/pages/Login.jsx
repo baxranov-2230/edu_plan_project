@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Box, 
-  Button, 
-  TextField, 
-  Typography, 
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
   InputAdornment,
   IconButton,
   Paper,
@@ -39,13 +39,11 @@ const Login = () => {
     onSubmit: async (values) => {
       setLoading(true);
       try {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwibmFtZSI6IkFkbWluIiwiZXhwIjoxNDk2NTUyMDU3MDl9.mocksignature"; 
-        login(mockToken); 
-        toast.success('Welcome back, Admin!');
+        await login(values.username, values.password);
+        toast.success('Welcome back!');
         navigate('/dashboard');
       } catch (error) {
-        toast.error('Login failed. Please try again.');
+        toast.error(`Login failed: ${error.message}`);
       } finally {
         setLoading(false);
       }
@@ -53,7 +51,7 @@ const Login = () => {
   });
 
   return (
-    <Box 
+    <Box
       className="min-h-screen w-full flex items-center justify-center bg-cover bg-center relative overflow-hidden"
       sx={{
         background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
@@ -66,7 +64,7 @@ const Login = () => {
       </Box>
 
       <Fade in={true} timeout={800}>
-        <Paper 
+        <Paper
           elevation={24}
           className="relative z-10 w-full max-w-md p-8 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl"
         >
@@ -109,7 +107,7 @@ const Login = () => {
                   }
                 }}
               />
-              
+
               <TextField
                 fullWidth
                 id="password"
@@ -165,10 +163,10 @@ const Login = () => {
               </Button>
             </Box>
           </form>
-          
+
           <Box className="mt-8 text-center border-t border-white/10 pt-6">
             <Typography variant="caption" className="text-gray-500">
-               © 2026 EduPanel System. All rights reserved.
+              © 2026 EduPanel System. All rights reserved.
             </Typography>
           </Box>
         </Paper>

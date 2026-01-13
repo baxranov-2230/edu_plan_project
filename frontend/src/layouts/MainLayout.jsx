@@ -3,27 +3,31 @@ import { Outlet } from 'react-router-dom';
 import { Box, CssBaseline } from '@mui/material';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import useLayoutStore from '../store/layoutStore';
 
 const MainLayout = () => {
+  const { sidebarOpen } = useLayoutStore();
+
   return (
-    <Box sx={{ display: 'flex', bgcolor: '#f1f5f9' }}> {/* Slate-100 background */}
+    <Box sx={{ display: 'flex', bgcolor: 'background.default', minHeight: '100vh' }}>
       <CssBaseline />
       <Header />
       <Sidebar />
       <Box
         component="main"
-        sx={{ 
-            flexGrow: 1, 
-            p: 4, 
-            mt: 8, 
-            ml: '288px', // Matching new Sidebar width
-            minHeight: '100vh',
-            width: 'calc(100% - 288px)'
+        sx={{
+          flexGrow: 1,
+          p: 4,
+          mt: 8,
+          ml: sidebarOpen ? '256px' : '80px',
+          minHeight: '100vh',
+          width: `calc(100% - ${sidebarOpen ? '256px' : '80px'})`,
+          transition: 'all 0.3s'
         }}
-        className="bg-slate-100"
+        className="bg-slate-100 dark:bg-slate-950"
       >
         <Box className="w-full">
-            <Outlet />
+          <Outlet />
         </Box>
       </Box>
     </Box>

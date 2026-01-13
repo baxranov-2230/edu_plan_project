@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # Database Service
+  db:
+    image: postgres:15-alpine
+    container_name: edu_plan_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5432:5432"
+    networks:
+      - edu_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+    container_name: edu_plan_backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - edu_network
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+    container_name: edu_plan_frontend
+    volumes:
+      - ./frontend/src:/app/src
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env
+
+    depends_on:
+      - backend
+    networks:
+      - edu_network
+
+volumes:
+  postgres_data:
+
+
+networks:
+  edu_network:
+    driver: bridge
