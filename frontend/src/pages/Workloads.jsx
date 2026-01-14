@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { 
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
-    Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, 
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+    Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
     CircularProgress, MenuItem, FormControl, InputLabel, Select, Pagination, PaginationItem,
     Box, Typography, Chip, Checkbox, FormControlLabel, FormGroup, FormLabel, Divider,
     Grid, IconButton, Tooltip, Collapse
@@ -18,13 +18,15 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 import { useWorkloads, useCreateBatchWorkload, useDeleteWorkload, useUpdateWorkload, useUpdateWorkloadGroup, useDeleteWorkloadGroup } from '../hooks/useWorkloads';
-import { useCurriculums } from '../hooks/useCurriculums';
+import { useSubjects } from '../hooks/useSubjects';
 import { useStreams } from '../hooks/useStreams';
 import { useGroups } from '../hooks/useGroups';
+import { useEduPlans } from '../hooks/useEduPlans';
+import { useDepartments } from '../hooks/useDepartments';
 
 const Row = ({ row, onDelete, onEdit, onGroupEdit, onGroupDelete }) => {
     const [open, setOpen] = useState(false);
-    
+
     // Aggregates
     const lectureHours = row.items.filter(i => i.load_type === 'lecture').reduce((sum, i) => sum + i.hours, 0);
     const practiceHours = row.items.filter(i => i.load_type === 'practice').reduce((sum, i) => sum + i.hours, 0);
@@ -39,13 +41,13 @@ const Row = ({ row, onDelete, onEdit, onGroupEdit, onGroupDelete }) => {
             if (item.group) targets.push({ type: 'group', id: item.group.id, name: item.group.name });
             if (item.subgroup) targets.push({ type: 'subgroup', id: item.subgroup.id, name: item.subgroup.name });
         });
-        
+
         // Remove duplicates roughly
         const unique = [];
         const seen = new Set();
         targets.forEach(t => {
             const key = `${t.type}-${t.id}`;
-            if(!seen.has(key)) {
+            if (!seen.has(key)) {
                 seen.add(key);
                 unique.push(t);
             }
@@ -55,11 +57,11 @@ const Row = ({ row, onDelete, onEdit, onGroupEdit, onGroupDelete }) => {
         return (
             <Box className="flex flex-wrap gap-1">
                 {unique.slice(0, 3).map((t, idx) => (
-                    <Chip 
-                        key={`${t.type}-${t.id}-${idx}`} 
-                        label={`${t.type === 'stream' ? 'Potok' : t.type === 'group' ? 'Guruh' : 'Guruhcha'}: ${t.name}`} 
-                        size="small" 
-                        variant="outlined" 
+                    <Chip
+                        key={`${t.type}-${t.id}-${idx}`}
+                        label={`${t.type === 'stream' ? 'Potok' : t.type === 'group' ? 'Guruh' : 'Guruhcha'}: ${t.name}`}
+                        size="small"
+                        variant="outlined"
                         color={t.type === 'stream' ? 'primary' : t.type === 'group' ? 'secondary' : 'success'}
                     />
                 ))}
@@ -71,7 +73,7 @@ const Row = ({ row, onDelete, onEdit, onGroupEdit, onGroupDelete }) => {
     return (
         <>
             <TableRow sx={{ '& > *': { borderBottom: 'unset' } }} hover className="cursor-pointer bg-slate-50/50 dark:bg-slate-900/50">
-                 <TableCell width={50}>
+                <TableCell width={50}>
                     <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
@@ -79,16 +81,16 @@ const Row = ({ row, onDelete, onEdit, onGroupEdit, onGroupDelete }) => {
                 <TableCell component="th" scope="row" onClick={() => setOpen(!open)}>
                     <Box className="flex items-center gap-2">
                         <Box>
-                            <Typography fontWeight="bold" className="text-slate-700 dark:text-slate-200">{row.curriculum_name}</Typography>
+                            <Typography fontWeight="bold" className="text-slate-700 dark:text-slate-200">{row.subject_name}</Typography>
                             {row.name && <Typography variant="caption" className="text-slate-500 dark:text-slate-400 font-medium">{row.name}</Typography>}
                         </Box>
                         <Tooltip title="Guruhni Tahrirlash (Global Update)">
-                             <IconButton size="small" onClick={(e) => { e.stopPropagation(); onGroupEdit(row); }} className="text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400">
+                            <IconButton size="small" onClick={(e) => { e.stopPropagation(); onGroupEdit(row); }} className="text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400">
                                 <EditIcon fontSize="small" />
                             </IconButton>
                         </Tooltip>
                         <Tooltip title="Guruhni O'chirish (Batch Delete)">
-                             <IconButton size="small" onClick={(e) => { e.stopPropagation(); onGroupDelete(row); }} className="text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400">
+                            <IconButton size="small" onClick={(e) => { e.stopPropagation(); onGroupDelete(row); }} className="text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400">
                                 <DeleteIcon fontSize="small" />
                             </IconButton>
                         </Tooltip>
@@ -114,7 +116,7 @@ const Row = ({ row, onDelete, onEdit, onGroupEdit, onGroupDelete }) => {
                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1, marginLeft: 6 }}>
-                             <Table size="small" aria-label="purchases">
+                            <Table size="small" aria-label="purchases">
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>ID</TableCell>
@@ -130,13 +132,13 @@ const Row = ({ row, onDelete, onEdit, onGroupEdit, onGroupDelete }) => {
                                             <TableCell component="th" scope="row" className="text-slate-500 dark:text-slate-400">{item.id}</TableCell>
                                             <TableCell className="uppercase text-xs font-bold">{item.load_type}</TableCell>
                                             <TableCell>
-                                                {item.stream ? <Chip label={`Potok: ${item.stream.name}`} size="small" variant='outlined' color='primary'/> : 
-                                                 item.group ? <Chip label={`Guruh: ${item.group.name}`} size="small" variant='outlined' color='secondary'/> : 
-                                                 item.subgroup ? <Chip label={`Guruhcha: ${item.subgroup.name}`} size="small" variant='outlined' /> : '-'}
+                                                {item.stream ? <Chip label={`Potok: ${item.stream.name}`} size="small" variant='outlined' color='primary' /> :
+                                                    item.group ? <Chip label={`Guruh: ${item.group.name}`} size="small" variant='outlined' color='secondary' /> :
+                                                        item.subgroup ? <Chip label={`Guruhcha: ${item.subgroup.name}`} size="small" variant='outlined' /> : '-'}
                                             </TableCell>
                                             <TableCell align="right">{item.hours}</TableCell>
                                             <TableCell align="right">
-                                                 <Tooltip title="O'chirish">
+                                                <Tooltip title="O'chirish">
                                                     <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}>
                                                         <DeleteIcon fontSize="small" />
                                                     </IconButton>
@@ -159,11 +161,18 @@ const Row = ({ row, onDelete, onEdit, onGroupEdit, onGroupDelete }) => {
     );
 };
 
+import { useLocation } from 'react-router-dom';
+
 const Workloads = () => {
     const [page, setPage] = useState(1);
-    const [size, setSize] = useState(100); 
+    const [size, setSize] = useState(100);
     const [openBatch, setOpenBatch] = useState(false);
-    
+
+    // URL Params
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const eduPlanIdParam = queryParams.get('edu_plan_id');
+
     // Edit States
     const [openEdit, setOpenEdit] = useState(false);
     const [editItem, setEditItem] = useState(null);
@@ -172,13 +181,19 @@ const Workloads = () => {
     // Group Edit States
     const [openGroupEdit, setOpenGroupEdit] = useState(false);
     const [groupEditItem, setGroupEditItem] = useState(null);
-    const [groupEditData, setGroupEditData] = useState({ new_curriculum_id: '', new_name: '' });
+    const [groupEditData, setGroupEditData] = useState({ new_subject_id: '', new_name: '', department_id: '', new_edu_plan_id: '' });
 
     // Data Hooks
-    const { data: workloadsData, isLoading } = useWorkloads({ page, size });
-    const { data: curriculumsData } = useCurriculums({ size: 100 });
+    const { data: workloadsData, isLoading } = useWorkloads({ page, size, edu_plan_id: eduPlanIdParam });
+    const { data: subjectsData } = useSubjects({ size: 100 });
     const { data: streamsData } = useStreams({ size: 100 });
+
     const { data: groupsData } = useGroups({ size: 100 });
+    const { data: eduPlans = [] } = useEduPlans();
+    const { data: departmentsData } = useDepartments({ size: 100 });
+
+    // Extract items from responses (handling potentially paginated responses)
+    const departments = Array.isArray(departmentsData) ? departmentsData : departmentsData?.items || [];
 
     const createBatchMutation = useCreateBatchWorkload();
     const updateMutation = useUpdateWorkload();
@@ -188,8 +203,8 @@ const Workloads = () => {
 
     const workloads = workloadsData?.items || [];
     const total = workloadsData?.total || 0;
-    
-    const curriculums = curriculumsData?.items || [];
+
+    const subjects = subjectsData?.items || [];
     const streams = streamsData?.items || [];
     const groups = groupsData?.items || [];
 
@@ -197,12 +212,12 @@ const Workloads = () => {
     const groupedWorkloads = useMemo(() => {
         const groups = {};
         workloads.forEach(item => {
-            const key = item.curriculum_id; 
+            const key = item.subject_id;
             if (!groups[key]) {
                 groups[key] = {
-                    curriculum_id: item.curriculum_id,
-                    curriculum_name: item.curriculum?.name || `Fan ID: ${item.curriculum_id}`,
-                    name: item.name, 
+                    subject_id: item.subject_id,
+                    subject_name: item.subject?.name || `Fan ID: ${item.subject_id}`,
+                    name: item.name,
                     items: []
                 };
             }
@@ -213,22 +228,26 @@ const Workloads = () => {
 
     // --- Batch Create ---
     const [batchData, setBatchData] = useState({
-        curriculum_id: '',
+        edu_plan_id: '',
+        department_id: '',
+        subject_id: '',
         semester: 'kuzgi',
-        name: '', 
-        hasLecture: false, hasPractice: false, hasLab: false,
+
+        hasLecture: false, hasPractice: false, hasLab: false, hasSeminar: false,
         lectureHours: 0, lectureStreams: [],
         practiceHours: 0, practiceGroups: [],
         labHours: 0, labGroups: [],
+        seminarHours: 0, seminarGroups: [],
     });
 
     const handleOpenBatch = () => {
         setBatchData({
-            curriculum_id: '', semester: 'kuzgi', name: '',
-            hasLecture: false, hasPractice: false, hasLab: false,
+            edu_plan_id: '', department_id: '', subject_id: '', semester: 'kuzgi',
+            hasLecture: false, hasPractice: false, hasLab: false, hasSeminar: false,
             lectureHours: 0, lectureStreams: [],
             practiceHours: 0, practiceGroups: [],
             labHours: 0, labGroups: [],
+            seminarHours: 0, seminarGroups: [],
         });
         setOpenBatch(true);
     };
@@ -244,12 +263,16 @@ const Workloads = () => {
         if (batchData.hasLab && batchData.labHours > 0 && batchData.labGroups.length > 0) {
             items.push({ load_type: 'lab', hours: parseInt(batchData.labHours), stream_ids: [], group_ids: batchData.labGroups });
         }
+        if (batchData.hasSeminar && batchData.seminarHours > 0 && batchData.seminarGroups.length > 0) {
+            items.push({ load_type: 'seminar', hours: parseInt(batchData.seminarHours), stream_ids: [], group_ids: batchData.seminarGroups });
+        }
         if (items.length === 0) return alert("Kamida bitta yuklama turini tanlang.");
 
-        await createBatchMutation.mutateAsync({ 
-            curriculum_id: batchData.curriculum_id, 
-            name: batchData.name,
-            items: items 
+        await createBatchMutation.mutateAsync({
+            subject_id: batchData.subject_id,
+            edu_plan_id: batchData.edu_plan_id || null,
+            name: null, // Removed name input
+            items: items
         });
         setOpenBatch(false);
     };
@@ -258,7 +281,7 @@ const Workloads = () => {
     const handleOpenEdit = (item) => {
         setEditItem(item);
         setEditData({
-            curriculum_id: item.curriculum_id,
+            subject_id: item.subject_id,
             load_type: item.load_type,
             hours: item.hours,
             name: item.name || '',
@@ -279,23 +302,27 @@ const Workloads = () => {
     };
 
     // --- Group Edit ---
-    const handleOpenGroupEdit = (groupRow) => {
-        setGroupEditItem(groupRow);
+    // --- Group Edit ---
+    const handleOpenGroupEdit = (row) => {
+        setGroupEditItem(row);
+        // Try to find a workload with this subject to get current EduPlan
+        const sampleWorkload = workloadsData?.items?.find(w => w.subject?.id === row.subject_id);
         setGroupEditData({
-            new_curriculum_id: groupRow.curriculum_id,
-            new_name: groupRow.name || ''
+            new_subject_id: row.subject_id,
+            new_name: row.name || '',
+            department_id: '',
+            new_edu_plan_id: sampleWorkload?.edu_plan_id || ''
         });
         setOpenGroupEdit(true);
     };
 
     const handleGroupEditSubmit = async () => {
-        const payload = { 
-            curriculum_id: groupEditItem.curriculum_id 
+        const payload = {
+            subject_id: groupEditItem.subject_id,
+            new_subject_id: groupEditData.new_subject_id,
+            new_name: groupEditData.new_name,
+            new_edu_plan_id: groupEditData.new_edu_plan_id
         };
-        // Only include if changed to avoid unnecessary updates if possible, 
-        // but backend logic handles it. 
-        payload.new_curriculum_id = groupEditData.new_curriculum_id;
-        payload.new_name = groupEditData.new_name;
 
         await updateGroupMutation.mutateAsync(payload);
         setOpenGroupEdit(false);
@@ -308,20 +335,20 @@ const Workloads = () => {
     };
 
     const handleGroupDelete = async (row) => {
-        if (window.confirm(`"${row.curriculum_name}" dagi BARCHA yuklamalarni o'chirishni tasdiqlaysizmi? Bu amalni ortga qaytarib bo'lmaydi.`)) {
-            await deleteGroupMutation.mutateAsync(row.curriculum_id);
+        if (window.confirm(`"${row.subject_name}" dagi BARCHA yuklamalarni o'chirishni tasdiqlaysizmi? Bu amalni ortga qaytarib bo'lmaydi.`)) {
+            await deleteGroupMutation.mutateAsync(row.subject_id);
         }
     };
-    
+
     return (
         <div className="p-6">
             <Box className="flex justify-between items-center mb-6">
                 <Typography variant="h5" className="font-bold text-slate-800 dark:text-white">
                     Yuklamalar (Workloads)
                 </Typography>
-                <Button 
-                    variant="contained" 
-                    color="primary" 
+                <Button
+                    variant="contained"
+                    color="primary"
                     startIcon={<AddIcon />}
                     onClick={handleOpenBatch}
                     className="bg-emerald-600 hover:bg-emerald-700"
@@ -349,9 +376,9 @@ const Workloads = () => {
                                 <TableCell colSpan={6} align="center"><CircularProgress /></TableCell>
                             </TableRow>
                         ) : groupedWorkloads.map((row) => (
-                            <Row 
-                                key={row.curriculum_id} 
-                                row={row} 
+                            <Row
+                                key={row.subject_id}
+                                row={row}
                                 onDelete={handleDelete}
                                 onEdit={handleOpenEdit}
                                 onGroupEdit={handleOpenGroupEdit}
@@ -360,11 +387,11 @@ const Workloads = () => {
                         ))}
                     </TableBody>
                 </Table>
-                
-                 <Box className="p-4 flex items-center justify-between border-t border-slate-200">
-                     <Pagination 
-                        count={Math.ceil(total / size) || 1} 
-                        page={page} 
+
+                <Box className="p-4 flex items-center justify-between border-t border-slate-200">
+                    <Pagination
+                        count={Math.ceil(total / size) || 1}
+                        page={page}
                         onChange={(e, p) => setPage(p)}
                         shape="rounded"
                         className="ml-auto"
@@ -376,34 +403,55 @@ const Workloads = () => {
             <Dialog open={openBatch} onClose={() => setOpenBatch(false)} maxWidth="md" fullWidth>
                 <DialogTitle>Yuklama Biriktirish (Batch)</DialogTitle>
                 <DialogContent className="pt-4">
-                     <Box className="flex flex-col gap-4 mt-2">
-                         <Box className="flex gap-4">
+                    <Box className="flex flex-col gap-4 mt-2">
+                        <Box className="flex flex-col gap-4">
                             <FormControl fullWidth>
-                                <InputLabel>Fan (Curriculum)</InputLabel>
+                                <InputLabel>O'quv Reja (Edu Plan)</InputLabel>
                                 <Select
-                                    value={batchData.curriculum_id}
-                                    label="Fan (Curriculum)"
-                                    onChange={(e) => setBatchData({ ...batchData, curriculum_id: e.target.value })}
+                                    value={batchData.edu_plan_id}
+                                    label="O'quv Reja (Edu Plan)"
+                                    onChange={(e) => setBatchData({ ...batchData, edu_plan_id: e.target.value })}
                                 >
-                                    {curriculums.map((c) => (
-                                        <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                                    {eduPlans.map((ep) => (
+                                        <MenuItem key={ep.id} value={ep.id}>{ep.name}</MenuItem>
                                     ))}
                                 </Select>
                             </FormControl>
-                            <TextField
-                                label="Yuklama Nomi (Ixtiyoriy)"
-                                placeholder="Masalan: Kuzgi Semestr Matematika"
-                                fullWidth
-                                value={batchData.name}
-                                onChange={(e) => setBatchData({ ...batchData, name: e.target.value })}
-                            />
-                         </Box>
-                         <Divider />
-                        {/* Types Inputs (Similar to previous, keeping concise here) */}
-                        {/* In real code, keeping inputs is crucial. Assuming they are preserved or I should re-include them fully if replacing file. */}
-                        {/* RE-INCLUDING FULL BATCH FORM TO BE SAFE */}
+
+                            <Box className="flex gap-4">
+                                <FormControl fullWidth>
+                                    <InputLabel>Kafedra (Filter)</InputLabel>
+                                    <Select
+                                        value={batchData.department_id}
+                                        label="Kafedra (Filter)"
+                                        onChange={(e) => setBatchData({ ...batchData, department_id: e.target.value, subject_id: '' })}
+                                    >
+                                        <MenuItem value=""><em>Barchasi</em></MenuItem>
+                                        {departments.map((d) => (
+                                            <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl fullWidth>
+                                    <InputLabel>Fan (Subject)</InputLabel>
+                                    <Select
+                                        value={batchData.subject_id}
+                                        label="Fan (Subject)"
+                                        onChange={(e) => setBatchData({ ...batchData, subject_id: e.target.value })}
+                                    >
+                                        {subjects
+                                            .filter(s => !batchData.department_id || s.department_id === batchData.department_id)
+                                            .map((c) => (
+                                                <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                                            ))}
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                        </Box>
+                        <Divider />
+
                         <Typography variant="subtitle1" fontWeight="bold">Mashg'ulot Turlari</Typography>
-                        <Box className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Box className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Lecture */}
                             <Box className="border rounded p-3 bg-slate-50 dark:bg-slate-900 dark:border-slate-700">
                                 <FormControlLabel
@@ -422,7 +470,7 @@ const Workloads = () => {
                                     </Box>
                                 )}
                             </Box>
-                             {/* Practice */}
+                            {/* Practice */}
                             <Box className="border rounded p-3 bg-slate-50 dark:bg-slate-900 dark:border-slate-700">
                                 <FormControlLabel
                                     control={<Checkbox checked={batchData.hasPractice} onChange={(e) => setBatchData({ ...batchData, hasPractice: e.target.checked })} />}
@@ -440,7 +488,7 @@ const Workloads = () => {
                                     </Box>
                                 )}
                             </Box>
-                             {/* Lab */}
+                            {/* Lab */}
                             <Box className="border rounded p-3 bg-slate-50 dark:bg-slate-900 dark:border-slate-700">
                                 <FormControlLabel
                                     control={<Checkbox checked={batchData.hasLab} onChange={(e) => setBatchData({ ...batchData, hasLab: e.target.checked })} />}
@@ -458,8 +506,26 @@ const Workloads = () => {
                                     </Box>
                                 )}
                             </Box>
+                            {/* Seminar */}
+                            <Box className="border rounded p-3 bg-slate-50 dark:bg-slate-900 dark:border-slate-700">
+                                <FormControlLabel
+                                    control={<Checkbox checked={batchData.hasSeminar} onChange={(e) => setBatchData({ ...batchData, hasSeminar: e.target.checked })} />}
+                                    label="Seminar"
+                                />
+                                {batchData.hasSeminar && (
+                                    <Box className="flex flex-col gap-2 mt-2">
+                                        <TextField label="Soat" type="number" size="small" fullWidth value={batchData.seminarHours} onChange={(e) => setBatchData({ ...batchData, seminarHours: e.target.value })} />
+                                        <FormControl fullWidth size="small">
+                                            <InputLabel>Guruhlar</InputLabel>
+                                            <Select multiple value={batchData.seminarGroups} label="Guruhlar" onChange={(e) => setBatchData({ ...batchData, seminarGroups: e.target.value })} renderValue={(s) => s.length + ' ta tanlandi'}>
+                                                {groups.map((g) => <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>)}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+                                )}
+                            </Box>
                         </Box>
-                     </Box>
+                    </Box>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenBatch(false)}>Bekor qilish</Button>
@@ -472,14 +538,14 @@ const Workloads = () => {
                 <DialogTitle>Yuklamani Tahrirlash</DialogTitle>
                 <DialogContent className="pt-4">
                     <Box className="flex flex-col gap-4 mt-2">
-                         <FormControl fullWidth>
-                            <InputLabel>Fan (Curriculum)</InputLabel>
+                        <FormControl fullWidth>
+                            <InputLabel>Fan (Subject)</InputLabel>
                             <Select
-                                value={editData.curriculum_id}
-                                label="Fan (Curriculum)"
-                                onChange={(e) => setEditData({ ...editData, curriculum_id: e.target.value })}
+                                value={editData.subject_id}
+                                label="Fan (Subject)"
+                                onChange={(e) => setEditData({ ...editData, subject_id: e.target.value })}
                             >
-                                {curriculums.map((c) => (
+                                {subjects.map((c) => (
                                     <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
                                 ))}
                             </Select>
@@ -490,8 +556,8 @@ const Workloads = () => {
                             value={editData.name}
                             onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                         />
-                         {/* Other inputs... */}
-                         <FormControl fullWidth>
+                        {/* Other inputs... */}
+                        <FormControl fullWidth>
                             <InputLabel>Turi</InputLabel>
                             <Select
                                 value={editData.load_type}
@@ -510,22 +576,22 @@ const Workloads = () => {
                             value={editData.hours}
                             onChange={(e) => setEditData({ ...editData, hours: e.target.value })}
                         />
-                         {editData.load_type === 'lecture' ? (
-                             <FormControl fullWidth>
+                        {editData.load_type === 'lecture' ? (
+                            <FormControl fullWidth>
                                 <InputLabel>Potok</InputLabel>
                                 <Select
                                     value={editData.stream_id}
                                     label="Potok"
                                     onChange={(e) => setEditData({ ...editData, stream_id: e.target.value })}
                                 >
-                                     <MenuItem value=""><em>Tanlanmagan</em></MenuItem>
+                                    <MenuItem value=""><em>Tanlanmagan</em></MenuItem>
                                     {streams.map((s) => (
                                         <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
                                     ))}
                                 </Select>
                             </FormControl>
                         ) : (
-                             <FormControl fullWidth>
+                            <FormControl fullWidth>
                                 <InputLabel>Guruh</InputLabel>
                                 <Select
                                     value={editData.group_id}
@@ -547,40 +613,69 @@ const Workloads = () => {
                 </DialogActions>
             </Dialog>
 
-             {/* --- Group Update Dialog --- */}
-             <Dialog open={openGroupEdit} onClose={() => setOpenGroupEdit(false)} maxWidth="sm" fullWidth>
+            {/* --- Group Update Dialog --- */}
+            <Dialog open={openGroupEdit} onClose={() => setOpenGroupEdit(false)} maxWidth="sm" fullWidth>
                 <DialogTitle>Guruhni Tahrirlash (Umumiy)</DialogTitle>
-                <DialogContent className="pt-4">
-                     <Typography variant="body2" className="text-slate-500 mb-4">
-                        Bu o'zgarish shu fandagi barcha ({groupEditItem?.items?.length}) yuklamalarga ta'sir qiladi.
+                <DialogContent>
+                    <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                        Bu o'zgarish shu fandagi barcha ({workloadsData?.items?.filter(w => w.subject?.id === groupEditItem).length}) yuklamalarga ta'sir qiladi.
                     </Typography>
-                    <Box className="flex flex-col gap-4 mt-2">
+                    <Box className="flex flex-col gap-4">
                         <TextField
                             label="Yuklama Nomi"
                             fullWidth
                             value={groupEditData.new_name}
                             onChange={(e) => setGroupEditData({ ...groupEditData, new_name: e.target.value })}
                         />
-                         <FormControl fullWidth>
-                            <InputLabel>Fan (Curriculum)</InputLabel>
-                            <Select
-                                value={groupEditData.new_curriculum_id}
-                                label="Fan (Curriculum)"
-                                onChange={(e) => setGroupEditData({ ...groupEditData, new_curriculum_id: e.target.value })}
-                            >
-                                {curriculums.map((c) => (
-                                    <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                        <TextField
+                            select
+                            label="O'quv Reja (Edu Plan)"
+                            fullWidth
+                            value={groupEditData.new_edu_plan_id || ''}
+                            onChange={(e) => setGroupEditData({ ...groupEditData, new_edu_plan_id: e.target.value })}
+                        >
+                            <MenuItem value="">Tanlanmagan</MenuItem>
+                            {eduPlans.map((plan) => (
+                                <MenuItem key={plan.id} value={plan.id}>{plan.name}</MenuItem>
+                            ))}
+                        </TextField>
+                        <TextField
+                            select
+                            label="Kafedra (Filtr)"
+                            fullWidth
+                            value={groupEditData.department_id || ''}
+                            onChange={(e) => setGroupEditData({ ...groupEditData, department_id: e.target.value })}
+                            helperText="Fanlarni filtrlash uchun kafedrani tanlang"
+                        >
+                            <MenuItem value="">Barchasi</MenuItem>
+                            {departments.map((dept) => (
+                                <MenuItem key={dept.id} value={dept.id}>{dept.name}</MenuItem>
+                            ))}
+                        </TextField>
+
+                        <TextField
+                            select
+                            label="Fan (Subject)"
+                            fullWidth
+                            value={groupEditData.new_subject_id || ''}
+                            onChange={(e) => setGroupEditData({ ...groupEditData, new_subject_id: e.target.value })}
+                        >
+                            {subjectsData?.items
+                                ?.filter(subject => !groupEditData.department_id || subject.department_id === groupEditData.department_id)
+                                .map((subject) => (
+                                    <MenuItem key={subject.id} value={subject.id}>
+                                        {subject.name}
+                                    </MenuItem>
                                 ))}
-                            </Select>
-                        </FormControl>
+                        </TextField>
                     </Box>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenGroupEdit(false)}>Bekor qilish</Button>
-                    <Button onClick={handleGroupEditSubmit} variant="contained" color="primary">Barchasini Yangilash</Button>
+                    <Button onClick={handleGroupEditSubmit} variant="contained" className="bg-emerald-600">Barchasini Yangilash</Button>
                 </DialogActions>
             </Dialog>
-        </div>
+        </div >
     );
 };
 

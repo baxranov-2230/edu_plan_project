@@ -13,16 +13,21 @@ class WorkloadService:
         self, 
         db: AsyncSession, 
         skip: int = 0, 
-        limit: int = 100
+        limit: int = 100,
+        edu_plan_id: Optional[int] = None
     ) -> tuple[List[Workload], int]:
         # Eager load relationships to avoid MissingGreenlet and explicit IDs
         # We need to load stream.groups because Stream schema includes it
         query = select(Workload).options(
-            selectinload(Workload.curriculum),
+            selectinload(Workload.subject),
+            selectinload(Workload.edu_plan),
             selectinload(Workload.stream).selectinload(Stream.groups), 
             selectinload(Workload.group),
             selectinload(Workload.subgroup)
         )
+        
+        if edu_plan_id:
+            query = query.where(Workload.edu_plan_id == edu_plan_id)
         
         count_query = select(func.count()).select_from(query.subquery())
         total = await db.scalar(count_query) or 0
@@ -31,13 +36,16 @@ class WorkloadService:
 
     async def get(self, db: AsyncSession, id: int) -> Optional[Workload]:
         query = select(Workload).where(Workload.id == id).options(
-            selectinload(Workload.curriculum),
+            selectinload(Workload.subject),
+            selectinload(Workload.edu_plan),
             selectinload(Workload.stream).selectinload(Stream.groups),
             selectinload(Workload.group),
             selectinload(Workload.subgroup)
         )
         result = await db.execute(query)
         return result.scalars().first()
+
+    # ... (create, update, delete generic methods are fine unless they used curriculum, which they don't seem to explicitly)
 
     async def create(self, db: AsyncSession, obj_in: WorkloadCreate) -> Workload:
         db_obj = Workload(**obj_in.model_dump())
@@ -68,7 +76,8 @@ class WorkloadService:
         for item in obj_in.items:
             # Prepare common data
             common_data = {
-                "curriculum_id": obj_in.curriculum_id,
+                "subject_id": obj_in.subject_id,
+                "edu_plan_id": obj_in.edu_plan_id,
                 "load_type": item.load_type,
                 "hours": item.hours,
                 "name": obj_in.name
@@ -135,7 +144,8 @@ class WorkloadService:
              
         created_ids = [w.id for w in created_workloads]
         query = select(Workload).where(Workload.id.in_(created_ids)).options(
-            selectinload(Workload.curriculum),
+            selectinload(Workload.subject),
+            selectinload(Workload.edu_plan),
             selectinload(Workload.stream).selectinload(Stream.groups),
             selectinload(Workload.group),
             selectinload(Workload.subgroup)
@@ -144,19 +154,22 @@ class WorkloadService:
         fetched_workloads = result.scalars().all()
         return fetched_workloads
     
-    async def update_by_curriculum(self, db: AsyncSession, obj_in: WorkloadGroupUpdate) -> int:
+    async def update_by_subject(self, db: AsyncSession, obj_in: WorkloadGroupUpdate) -> int:
         """
-        Updates name and/or curriculum_id for all workloads matching the validation criteria.
+        Updates name and/or subject_id for all workloads matching the validation criteria.
         Returns number of updated rows.
         """
-        stmt = update(Workload).where(Workload.curriculum_id == obj_in.curriculum_id)
+        stmt = update(Workload).where(Workload.subject_id == obj_in.subject_id)
         
         values = {}
         if obj_in.new_name is not None:
             values["name"] = obj_in.new_name
         
-        if obj_in.new_curriculum_id is not None:
-             values["curriculum_id"] = obj_in.new_curriculum_id
+        if obj_in.new_subject_id is not None:
+             values["subject_id"] = obj_in.new_subject_id
+
+        if obj_in.new_edu_plan_id is not None:
+             values["edu_plan_id"] = obj_in.new_edu_plan_id
              
         if not values:
             return 0
@@ -166,13 +179,13 @@ class WorkloadService:
         await db.commit()
         return result.rowcount
 
-    async def delete_by_curriculum(self, db: AsyncSession, curriculum_id: int) -> int:
+    async def delete_by_subject(self, db: AsyncSession, subject_id: int) -> int:
         """
-        Deletes all workloads for a given curriculum_id.
+        Deletes all workloads for a given subject_id.
         Returns number of deleted rows.
         """
         from sqlalchemy import delete
-        stmt = delete(Workload).where(Workload.curriculum_id == curriculum_id)
+        stmt = delete(Workload).where(Workload.subject_id == subject_id)
         result = await db.execute(stmt)
         await db.commit()
         return result.rowcount

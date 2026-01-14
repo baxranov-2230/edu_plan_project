@@ -29,8 +29,8 @@ const workloadApi = {
         const response = await api.delete(`/workloads/${id}`);
         return response.data;
     },
-    deleteGroup: async (curriculumId) => {
-        const response = await api.delete('/workloads/group', { params: { curriculum_id: curriculumId } });
+    deleteGroup: async (subjectId) => {
+        const response = await api.delete('/workloads/group', { params: { subject_id: subjectId } });
         return response.data;
     },
 };

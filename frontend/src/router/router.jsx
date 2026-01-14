@@ -5,7 +5,7 @@ import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
 import Users from "../pages/Users";
 import Settings from "../pages/Settings";
-import Curriculums from "../pages/Curriculums";
+import Subjects from "../pages/Subjects";
 import Downloads from "../pages/Downloads";
 import Programs from "../pages/Programs";
 import Classes from "../pages/Classes";
@@ -17,6 +17,7 @@ import Groups from "../pages/Groups";
 import Teachers from "../pages/Teachers";
 import Streams from "../pages/Streams";
 import Workloads from "../pages/Workloads";
+import EduPlans from "../pages/EduPlans";
 import useAuthStore from "../store/authStore";
 
 const ProtectedRoute = ({ children }) => {
@@ -59,8 +60,8 @@ const router = createBrowserRouter([
         element: <Dashboard />,
       },
       {
-        path: "curriculums",
-        element: <Curriculums />,
+        path: "subjects",
+        element: <Subjects />,
       },
       {
         path: "downloads",
@@ -113,6 +114,10 @@ const router = createBrowserRouter([
       {
         path: "workloads",
         element: <Workloads />,
+      },
+      {
+        path: "edu-plans",
+        element: <EduPlans />,
       },
     ],
   },

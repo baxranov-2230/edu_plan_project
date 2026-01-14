@@ -36,13 +36,14 @@ const Sidebar = () => {
 
   const menuItems = [
     { text: 'Bosh sahifa', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: "Fanlar", icon: <SchoolIcon />, path: '/curriculums' },
+    { text: "Fanlar", icon: <SchoolIcon />, path: '/subjects' },
     // { text: 'Fayllar', icon: <ArticleIcon />, path: '/downloads' },
     // { text: 'Fan dasturlari', icon: <ClassIcon />, path: '/programs' },
     { text: 'Xodimlar', icon: <PeopleIcon />, path: '/users' },
     { text: 'Fakultetlar', icon: <SchoolIcon />, path: '/faculties' },
     { text: 'Kafedralar', icon: <SchoolIcon />, path: '/departments' },
     { text: 'Mutaxassisliklar', icon: <SchoolIcon />, path: '/specialities' },
+    { text: "O'quv Rejalar", icon: <ArticleIcon />, path: '/edu-plans' },
     { text: 'Guruhlar', icon: <GroupIcon />, path: '/groups' },
     { text: "O'qituvchilar", icon: <PersonIcon />, path: '/teachers' },
     { text: 'Potoklar', icon: <ViewStreamIcon />, path: '/streams' },
@@ -91,10 +92,10 @@ const Sidebar = () => {
             <Tooltip title={!sidebarOpen ? item.text : ''} placement="right" arrow>
               <NavLink
                 to={item.path}
-                className={() =>
+                className={({ isActive }) =>
                   `flex items-center rounded-xl text-sm font-medium transition-all duration-200 group no-underline relative overflow-hidden
-                   ${location.pathname.startsWith(item.path)
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20' 
+                   ${isActive
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
                     : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
                   }`
                 }

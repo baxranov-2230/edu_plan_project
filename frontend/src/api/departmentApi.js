@@ -1,8 +1,8 @@
 import api from './axios';
 
 const departmentApi = {
-    getAll: async () => {
-        const response = await api.get('/departments/');
+    getAll: async (params) => {
+        const response = await api.get('/departments/', { params });
         return response.data;
     },
     getById: async (id) => {

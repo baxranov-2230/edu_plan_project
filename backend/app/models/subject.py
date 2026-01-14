@@ -8,8 +8,8 @@ class SemesterType(str, enum.Enum):
     KUZGI = "kuzgi"
     BAHORGI = "bahorgi"
 
-class Curriculum(Base):
-    __tablename__ = "curriculums"
+class Subject(Base):
+    __tablename__ = "subjects"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String, index=True) # Subject name
@@ -21,4 +21,4 @@ class Curriculum(Base):
     semesters: Mapped[list[str]] = mapped_column(ARRAY(String), default=list)
 
     # Relationships
-    department = relationship("Department", backref="curriculums")
+    department = relationship("Department", backref="subjects")

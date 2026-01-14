@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
-    Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, 
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+    Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
     CircularProgress, MenuItem, FormControl, InputLabel, Select, Pagination, PaginationItem,
     Box, Typography, Chip, FormControlLabel, Checkbox, FormGroup, FormLabel
 } from '@mui/material';
@@ -10,29 +10,29 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import { useCurriculums, useCreateCurriculum, useUpdateCurriculum, useDeleteCurriculum } from '../hooks/useCurriculums';
+import { useSubjects, useCreateSubject, useUpdateSubject, useDeleteSubject } from '../hooks/useSubjects';
 import { useDepartments } from '../hooks/useDepartments';
 
-const Curriculums = () => {
+const Subjects = () => {
     const [page, setPage] = useState(1);
     const [size, setSize] = useState(20);
     const [search, setSearch] = useState('');
     const [open, setOpen] = useState(false);
     const [editItem, setEditItem] = useState(null);
-    const [formData, setFormData] = useState({ 
-        name: '', 
+    const [formData, setFormData] = useState({
+        name: '',
         department_id: '',
         credits: 0,
         semesters: [] // Changed to array
     });
 
-    const { data, isLoading } = useCurriculums({ page, size, search });
+    const { data, isLoading } = useSubjects({ page, size, search });
     const { data: departmentsData } = useDepartments();
     const departments = Array.isArray(departmentsData) ? departmentsData : (departmentsData?.items || []);
-    
-    const createMutation = useCreateCurriculum();
-    const updateMutation = useUpdateCurriculum();
-    const deleteMutation = useDeleteCurriculum();
+
+    const createMutation = useCreateSubject();
+    const updateMutation = useUpdateSubject();
+    const deleteMutation = useDeleteSubject();
 
     const items = data?.items || [];
     const total = data?.total || 0;
@@ -40,16 +40,16 @@ const Curriculums = () => {
     const handleOpen = (item = null) => {
         if (item) {
             setEditItem(item);
-            setFormData({ 
-                name: item.name, 
+            setFormData({
+                name: item.name,
                 department_id: item.department_id,
                 credits: item.credits || 0,
                 semesters: item.semesters || []
             });
         } else {
             setEditItem(null);
-            setFormData({ 
-                name: '', 
+            setFormData({
+                name: '',
                 department_id: '',
                 credits: 0,
                 semesters: []
@@ -63,7 +63,7 @@ const Curriculums = () => {
     const handleSemesterChange = (event) => {
         const { value, checked } = event.target;
         setFormData(prev => {
-            const newSemesters = checked 
+            const newSemesters = checked
                 ? [...prev.semesters, value]
                 : prev.semesters.filter(s => s !== value);
             return { ...prev, semesters: newSemesters };
@@ -73,7 +73,7 @@ const Curriculums = () => {
     const handleSubmit = async () => {
         const payload = { ...formData };
         payload.credits = parseInt(payload.credits);
-        
+
         if (editItem) {
             await updateMutation.mutateAsync({ id: editItem.id, data: payload });
         } else {
@@ -92,11 +92,11 @@ const Curriculums = () => {
         <div className="p-6">
             <Box className="flex justify-between items-center mb-6">
                 <Typography variant="h5" className="font-bold text-slate-800 dark:text-white">
-                    Fanlar (Curriculum)
+                    Fanlar (Subjects)
                 </Typography>
-                <Button 
-                    variant="contained" 
-                    color="primary" 
+                <Button
+                    variant="contained"
+                    color="primary"
                     startIcon={<AddIcon />}
                     onClick={() => handleOpen()}
                     className="bg-emerald-600 hover:bg-emerald-700"
@@ -143,11 +143,11 @@ const Curriculums = () => {
                                 <TableCell>
                                     <Box className="flex gap-1">
                                         {item.semesters && item.semesters.map(sem => (
-                                            <Chip 
+                                            <Chip
                                                 key={sem}
-                                                label={sem === 'kuzgi' ? 'Kuzgi' : 'Bahorgi'} 
-                                                color={sem === 'kuzgi' ? 'warning' : 'success'} 
-                                                size="small" 
+                                                label={sem === 'kuzgi' ? 'Kuzgi' : sem === 'bahorgi' ? 'Bahorgi' : sem}
+                                                color={sem === 'kuzgi' ? 'warning' : 'success'}
+                                                size="small"
                                             />
                                         ))}
                                     </Box>
@@ -163,23 +163,23 @@ const Curriculums = () => {
                         ))}
                     </TableBody>
                 </Table>
-                
+
                 <Box className="p-4 flex items-center justify-between border-t border-slate-200">
-                     <Select
+                    <Select
                         value={size}
                         size="small"
                         onChange={(e) => {
                             setSize(e.target.value);
                             setPage(1);
                         }}
-                     >
+                    >
                         <MenuItem value={10}>10</MenuItem>
                         <MenuItem value={20}>20</MenuItem>
                         <MenuItem value={50}>50</MenuItem>
-                     </Select>
-                     <Pagination 
-                        count={Math.ceil(total / size) || 1} 
-                        page={page} 
+                    </Select>
+                    <Pagination
+                        count={Math.ceil(total / size) || 1}
+                        page={page}
                         onChange={(e, p) => setPage(p)}
                         shape="rounded"
                         renderItem={(item) => (
@@ -209,31 +209,34 @@ const Curriculums = () => {
                             value={formData.credits}
                             onChange={(e) => setFormData({ ...formData, credits: e.target.value })}
                         />
-                        
+
                         <FormControl component="fieldset">
                             <FormLabel component="legend">Semestrlar</FormLabel>
                             <FormGroup row>
                                 <FormControlLabel
                                     control={
-                                        <Checkbox 
-                                            checked={formData.semesters.includes('kuzgi')} 
-                                            onChange={handleSemesterChange} 
-                                            value="kuzgi" 
+                                        <Checkbox
+                                            checked={formData.semesters.includes('kuzgi')}
+                                            onChange={handleSemesterChange}
+                                            value="kuzgi"
                                         />
                                     }
                                     label="Kuzgi"
                                 />
                                 <FormControlLabel
                                     control={
-                                        <Checkbox 
-                                            checked={formData.semesters.includes('bahorgi')} 
-                                            onChange={handleSemesterChange} 
-                                            value="bahorgi" 
+                                        <Checkbox
+                                            checked={formData.semesters.includes('bahorgi')}
+                                            onChange={handleSemesterChange}
+                                            value="bahorgi"
                                         />
                                     }
                                     label="Bahorgi"
                                 />
                             </FormGroup>
+                            <Typography variant="caption" className="text-gray-500 mt-2 block">
+                                Also accepts numbers like 1, 2, 3... (Manual input TBD)
+                            </Typography>
                         </FormControl>
 
                         <FormControl fullWidth>
@@ -259,4 +262,4 @@ const Curriculums = () => {
     );
 };
 
-export default Curriculums;
+export default Subjects;

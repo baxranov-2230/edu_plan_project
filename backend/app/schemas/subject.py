@@ -6,27 +6,27 @@ class SemesterType(str, Enum):
     KUZGI = "kuzgi"
     BAHORGI = "bahorgi"
 
-class CurriculumBase(BaseModel):
+class SubjectBase(BaseModel):
     name: str
     department_id: int
     credits: int = 0
-    semesters: List[SemesterType] = [SemesterType.KUZGI]
+    semesters: List[str] = []
 
-class CurriculumCreate(CurriculumBase):
+class SubjectCreate(SubjectBase):
     pass
 
-class CurriculumUpdate(BaseModel):
+class SubjectUpdate(BaseModel):
     name: Optional[str] = None
     department_id: Optional[int] = None
     credits: Optional[int] = None
-    semesters: Optional[List[SemesterType]] = None
+    semesters: Optional[List[str]] = None
 
-class Curriculum(CurriculumBase):
+class Subject(SubjectBase):
     id: int
 
     class Config:
         from_attributes = True
 
-class CurriculumList(BaseModel):
-    items: List[Curriculum]
+class SubjectList(BaseModel):
+    items: List[Subject]
     total: int

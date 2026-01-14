@@ -1,5 +1,5 @@
-from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Any, List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import deps
 from app.schemas.workload import Workload, WorkloadCreate, WorkloadUpdate, WorkloadList, WorkloadBatchCreate, WorkloadGroupUpdate
@@ -13,10 +13,11 @@ async def read_workloads(
     db: AsyncSession = Depends(deps.get_db),
     page: int = 1,
     size: int = 20,
+    edu_plan_id: Optional[int] = Query(None, description="Filter by EduPlan ID"),
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     skip = (page - 1) * size
-    items, total = await workload_service.get_multi(db, skip=skip, limit=size)
+    items, total = await workload_service.get_multi(db, skip=skip, limit=size, edu_plan_id=edu_plan_id)
     return {"items": items, "total": total, "page": page, "size": size}
 
 @router.post("/", response_model=Workload)
@@ -48,22 +49,22 @@ async def update_workload_group(
     current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    Update multiple workloads grouped by curriculum_id (Global Edit).
+    Update multiple workloads grouped by subject_id (Global Edit).
     """
-    count = await workload_service.update_by_curriculum(db, obj_in=group_update)
+    count = await workload_service.update_by_subject(db, obj_in=group_update)
     return {"updated_count": count}
 
 @router.delete("/group", response_model=dict)
 async def delete_workload_group(
     *,
     db: AsyncSession = Depends(deps.get_db),
-    curriculum_id: int,
+    subject_id: int,
     current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    Delete multiple workloads grouped by curriculum_id.
+    Delete multiple workloads grouped by subject_id.
     """
-    count = await workload_service.delete_by_curriculum(db, curriculum_id=curriculum_id)
+    count = await workload_service.delete_by_subject(db, subject_id=subject_id)
     return {"deleted_count": count}
 
 

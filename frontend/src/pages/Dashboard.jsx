@@ -36,7 +36,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import DownloadIcon from '@mui/icons-material/Download';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { useGroups } from '../hooks/useGroups';
-import { useCurriculums } from '../hooks/useCurriculums';
+import { useSubjects } from '../hooks/useSubjects';
 import { useWorkloads } from '../hooks/useWorkloads';
 import { useSpecialities } from '../hooks/useSpecialities';
 import { useDepartments } from '../hooks/useDepartments';
@@ -104,36 +104,36 @@ const StatCard = ({ title, value, icon, color, gradient, trend }) => (
 // Mock Data for Charts
 
 const Dashboard = () => {
-    const currentDate = new Date().toLocaleDateString('uz-UZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    
-    // Fetch stats
-    const { data: groupsData } = useGroups({ page: 1, size: 1 });
-    const { data: curriculumsData } = useCurriculums({ page: 1, size: 1 });
-    // Fetch more workloads to calculate unique curriculums/plans
-    const { data: workloadsData } = useWorkloads({ page: 1, size: 1000 });
-    const { data: specialitiesData } = useSpecialities({ page: 1, size: 1 });
-    const { data: departmentsData } = useDepartments();
-    const { data: facultiesData } = useFaculties();
+  const currentDate = new Date().toLocaleDateString('uz-UZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-    const totalGroups = groupsData?.total || 0;
-    // Mapping "Fan Dasturlari" to Curriculums as they represent Subjects
-    const totalCurriculums = curriculumsData?.total || 0; 
-    const totalHours = workloadsData?.items?.reduce((acc, curr) => acc + (Number(curr.hours) || 0), 0) || 0;
-    // Mapping "O'quv Rejalar" to Specialities as roughly representing plans
-    const totalSpecialities = specialitiesData?.total || 0;
+  // Fetch stats
+  const { data: groupsData } = useGroups({ page: 1, size: 1 });
+  const { data: subjectsData } = useSubjects({ page: 1, size: 1 });
+  // Fetch more workloads to calculate unique curriculums/plans
+  const { data: workloadsData } = useWorkloads({ page: 1, size: 1000 });
+  const { data: specialitiesData } = useSpecialities({ page: 1, size: 1 });
+  const { data: departmentsData } = useDepartments();
+  const { data: facultiesData } = useFaculties();
 
-    // Helper to get faculty name
-    const getFacultyName = (workload) => {
-        if (!workload.curriculum?.department_id) return 'Noma\'lum';
-        // Check if departmentsData is array or object with items
-        const depts = Array.isArray(departmentsData) ? departmentsData : (departmentsData?.items || []);
-        const dept = depts.find(d => d.id === workload.curriculum.department_id);
-        if (!dept?.faculty_id) return 'Noma\'lum';
-        
-        const faculties = Array.isArray(facultiesData) ? facultiesData : (facultiesData?.items || []);
-        const faculty = faculties.find(f => f.id === dept.faculty_id);
-        return faculty?.name || 'Noma\'lum';
-    };
+  const totalGroups = groupsData?.total || 0;
+  // Mapping "Fan Dasturlari" to Curriculums as they represent Subjects
+  const totalSubjects = subjectsData?.total || 0;
+  const totalHours = workloadsData?.items?.reduce((acc, curr) => acc + (Number(curr.hours) || 0), 0) || 0;
+  // Mapping "O'quv Rejalar" to Specialities as roughly representing plans
+  const totalSpecialities = specialitiesData?.total || 0;
+
+  // Helper to get faculty name
+  const getFacultyName = (workload) => {
+    if (!workload.subject?.department_id) return 'Noma\'lum';
+    // Check if departmentsData is array or object with items
+    const depts = Array.isArray(departmentsData) ? departmentsData : (departmentsData?.items || []);
+    const dept = depts.find(d => d.id === workload.subject.department_id);
+    if (!dept?.faculty_id) return 'Noma\'lum';
+
+    const faculties = Array.isArray(facultiesData) ? facultiesData : (facultiesData?.items || []);
+    const faculty = faculties.find(f => f.id === dept.faculty_id);
+    return faculty?.name || 'Noma\'lum';
+  };
 
   return (
     <Box className="animate-fade-in">
@@ -169,8 +169,8 @@ const Dashboard = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="O'quv rejalar"
-            value={workloadsData?.items ? new Set(workloadsData.items.map(w => w.curriculum_id)).size : 0} // Unique subjects in workloads
+            title="Fanlar"
+            value={workloadsData?.items ? new Set(workloadsData.items.map(w => w.subject_id)).size : 0} // Unique subjects in workloads
             icon={<AssignmentIcon />}
             color="#8b5cf6"
             gradient="bg-gradient-to-br from-violet-400 to-purple-500"
@@ -234,17 +234,17 @@ const Dashboard = () => {
                 <PieChart>
                   <Pie
                     data={
-                      workloadsData?.items 
+                      workloadsData?.items
                         ? Object.entries(workloadsData.items.reduce((acc, curr) => {
-                            // Group by Faculty Name
-                            const name = getFacultyName(curr);
-                            acc[name] = (acc[name] || 0) + (Number(curr.hours) || 0);
-                            return acc;
-                          }, {}))
+                          // Group by Faculty Name
+                          const name = getFacultyName(curr);
+                          acc[name] = (acc[name] || 0) + (Number(curr.hours) || 0);
+                          return acc;
+                        }, {}))
                           .map(([name, value]) => ({ name, value }))
                           .sort((a, b) => b.value - a.value)
                           .slice(0, 5) // Top 5
-                        : subjectData 
+                        : subjectData
                     }
                     cx="50%"
                     cy="50%"
@@ -254,13 +254,13 @@ const Dashboard = () => {
                     dataKey="value"
                   >
                     {/* Colors need to map to data length */}
-                    {(workloadsData?.items 
-                        ? Object.entries(workloadsData.items.reduce((acc, curr) => {
-                             const name = getFacultyName(curr);
-                             acc[name] = (acc[name] || 0) + (Number(curr.hours) || 0);
-                             return acc;
-                          }, {})).slice(0, 5)
-                        : subjectData
+                    {(workloadsData?.items
+                      ? Object.entries(workloadsData.items.reduce((acc, curr) => {
+                        const name = getFacultyName(curr);
+                        acc[name] = (acc[name] || 0) + (Number(curr.hours) || 0);
+                        return acc;
+                      }, {})).slice(0, 5)
+                      : subjectData
                     ).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}

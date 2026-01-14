@@ -19,7 +19,7 @@ class Workload(Base):
     name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     # 1. NIMA O'TILADI? (O'quv rejadagi fanga bog'lanadi)
-    curriculum_id: Mapped[int] = mapped_column(ForeignKey("curriculums.id"))
+    subject_id: Mapped[int] = mapped_column(ForeignKey("subjects.id"))
     
     # 2. DARS TURI
     load_type: Mapped[LoadType] = mapped_column(SaEnum(LoadType))
@@ -29,11 +29,15 @@ class Workload(Base):
     group_id: Mapped[Optional[int]] = mapped_column(ForeignKey("groups.id"), nullable=True)
     subgroup_id: Mapped[Optional[int]] = mapped_column(ForeignKey("subgroups.id"), nullable=True)
     
-    # 4. SOAT
+    # 4. O'QUV REJA (Optional, if grouping is used)
+    edu_plan_id: Mapped[Optional[int]] = mapped_column(ForeignKey("edu_plans.id"), nullable=True)
+
+    # 5. SOAT
     hours: Mapped[int] = mapped_column(Integer)
 
     # Relationships
-    curriculum = relationship("Curriculum", backref="workloads")
+    subject = relationship("Subject", backref="workloads")
+    edu_plan = relationship("EduPlan", back_populates="workloads")
     
     stream = relationship("Stream", backref="workloads")
     group = relationship("Group", backref="workloads")

@@ -3,10 +3,11 @@ import departmentApi from '../api/departmentApi';
 import { toast } from 'react-toastify';
 import { handleError } from '../services/errorHandler';
 
-export const useDepartments = () => {
+export const useDepartments = (params) => {
     return useQuery({
-        queryKey: ['departments'],
-        queryFn: departmentApi.getAll,
+        queryKey: ['departments', params],
+        queryFn: () => departmentApi.getAll(params),
+        placeholderData: (previousData) => previousData,
     });
 };
 
