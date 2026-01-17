@@ -87,10 +87,18 @@ const Sidebar = () => {
   ];
 
   const renderMenuItem = (item) => {
+    // Helper to check if a path is active (including sub-paths)
+    const isPathActive = (path) => {
+      if (path === '/' || path === '/dashboard') {
+        return location.pathname === path;
+      }
+      return location.pathname.startsWith(path);
+    };
+
     // If it's a grouped item (parent)
     if (item.children) {
       const isOpen = openSubMenus[item.key];
-      const isActiveChild = item.children.some(child => child.path === location.pathname);
+      const isActiveChild = item.children.some(child => isPathActive(child.path));
 
       return (
         <React.Fragment key={item.key}>
@@ -142,13 +150,14 @@ const Sidebar = () => {
                   <ListItem key={child.text} disablePadding className="mb-1 block">
                     <NavLink
                       to={child.path}
-                      className={({ isActive }) =>
-                        `flex items-center rounded-lg text-sm transition-all duration-200 group no-underline relative overflow-hidden
-                        ${isActive
-                          ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400 font-semibold'
-                          : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/50'
-                        }`
-                      }
+                      className={() => {
+                        const active = isPathActive(child.path);
+                        return `flex items-center rounded-lg text-sm transition-all duration-200 group no-underline relative overflow-hidden
+                        ${active
+                            ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400 font-semibold'
+                            : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/50'
+                          }`;
+                      }}
                     >
                       <ListItemButton
                         sx={{
@@ -159,7 +168,7 @@ const Sidebar = () => {
                         }}
                       >
                         {/* <ListItemIcon sx={{ minWidth: 24, color: 'inherit', mr: 1 }}>
-                                {child.icon} 
+                                {child.icon}
                             </ListItemIcon> */}
                         <Typography variant="body2" fontSize="0.9rem">
                           {child.text}
@@ -175,19 +184,20 @@ const Sidebar = () => {
       );
     }
 
-    // Checking active state
+    // Checking active state for single items
     return (
       <ListItem key={item.text} disablePadding className="mb-2 block">
         <Tooltip title={!sidebarOpen ? item.text : ''} placement="right" arrow>
           <NavLink
             to={item.path}
-            className={({ isActive }) =>
-              `flex items-center rounded-xl text-sm font-medium transition-all duration-200 group no-underline relative overflow-hidden
-                 ${isActive
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
-              }`
-            }
+            className={() => {
+              const active = isPathActive(item.path);
+              return `flex items-center rounded-xl text-sm font-medium transition-all duration-200 group no-underline relative overflow-hidden
+                 ${active
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
+                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
+                }`;
+            }}
           >
             <ListItemButton
               sx={{
