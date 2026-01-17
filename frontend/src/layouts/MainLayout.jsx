@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { Box, CssBaseline } from '@mui/material';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import Breadcrumbs from '../components/Breadcrumbs';
 import useLayoutStore from '../store/layoutStore';
 
 const MainLayout = () => {
@@ -27,6 +28,7 @@ const MainLayout = () => {
         className="bg-slate-100 dark:bg-slate-950"
       >
         <Box className="w-full">
+          <Breadcrumbs />
           <Outlet />
         </Box>
       </Box>
