@@ -16,15 +16,17 @@ from sqlalchemy import select
 
 router = APIRouter()
 
+
 @router.post("/access-token", response_model=Token)
 async def login_access_token(
-    db: AsyncSession = Depends(get_db),
-    form_data: OAuth2PasswordRequestForm = Depends()
+    db: AsyncSession = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
     """
-    OAuth2 compatible token login, get an access token for future requests
+    OAuth2 orqali kirish (Login).
+    Token olish uchun ishlatiladi.
     """
     return await auth_service.authenticate(db, form_data)
+
 
 @router.post("/register", response_model=UserSchema)
 async def register(
@@ -33,7 +35,8 @@ async def register(
     user_in: UserRegister,
 ) -> Any:
     """
-    Create new user without the need to be logged in
+    Yangi foydalanuvchini ro'yxatdan o'tkazish.
+    Tizimga kirish talab qilinmaydi.
     """
     # Check if user exists
     user = await user_service.get_by_email(db, user_in.email)
@@ -42,5 +45,5 @@ async def register(
             status_code=400,
             detail="The user with this username already exists in the system",
         )
-    
+
     return await user_service.register_user(db, user_in)

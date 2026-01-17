@@ -17,7 +17,7 @@ async def read_edu_plans(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Retrieve edu plans.
+    O'quv rejalari ro'yxatini olish.
     """
     return await edu_plan_service.get_multi(db, skip=skip, limit=limit)
 
@@ -30,7 +30,7 @@ async def create_edu_plan(
     current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    Create new edu plan.
+    Yangi o'quv rejasi yaratish.
     """
     return await edu_plan_service.create(db=db, obj_in=edu_plan_in)
 
@@ -44,7 +44,7 @@ async def update_edu_plan(
     current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    Update an edu plan.
+    O'quv rejasini yangilash.
     """
     edu_plan = await edu_plan_service.get(db=db, id=id)
     if not edu_plan:
@@ -60,7 +60,7 @@ async def delete_edu_plan(
     current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    Delete an edu plan.
+    O'quv rejasini o'chirish.
     """
     edu_plan = await edu_plan_service.get(db=db, id=id)
     if not edu_plan:

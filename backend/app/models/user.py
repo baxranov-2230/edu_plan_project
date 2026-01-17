@@ -12,7 +12,14 @@ user_roles = Table(
 )
 from sqlalchemy import ForeignKey
 
+
 class User(Base):
+    """
+    Foydalanuvchi modeli.
+    Tizimdagi barcha foydalanuvchilar (admin, o'qituvchi, talaba) uchun umumiy model.
+    Rollar (Roles) orqali huquqlari belgilanadi.
+    """
+
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -29,13 +36,12 @@ class User(Base):
     jshshir: Mapped[str | None] = mapped_column(unique=True, index=True, nullable=True)
     username: Mapped[str | None] = mapped_column(unique=True, index=True, nullable=True)
     phone_number: Mapped[str | None] = mapped_column(nullable=True)
-    
-   
-    department_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id"), nullable=True)
+
+    department_id: Mapped[int | None] = mapped_column(
+        ForeignKey("departments.id"), nullable=True
+    )
 
     # Relationship to roles
     roles: Mapped[List["Role"]] = relationship(
-        "Role",
-        secondary=user_roles,
-        lazy="selectin"
+        "Role", secondary=user_roles, lazy="selectin"
     )

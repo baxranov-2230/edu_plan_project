@@ -4,13 +4,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.subgroup import Subgroup
 from app.schemas.subgroup import SubgroupCreate, SubgroupUpdate
 
+
 class SubgroupService:
+    """
+    Guruhcha (Subgroup) servisi.
+    Guruhchalarni boshqarish.
+    """
+
     async def get_multi(
-        self, 
-        db: AsyncSession, 
-        skip: int = 0, 
-        limit: int = 100
+        self, db: AsyncSession, skip: int = 0, limit: int = 100
     ) -> tuple[List[Subgroup], int]:
+        """
+        Guruhchalarni olish.
+        """
         query = select(Subgroup)
         count_query = select(func.count()).select_from(query.subquery())
         total = await db.scalar(count_query) or 0
@@ -28,7 +34,9 @@ class SubgroupService:
         await db.refresh(db_obj)
         return db_obj
 
-    async def update(self, db: AsyncSession, *, db_obj: Subgroup, obj_in: SubgroupUpdate) -> Subgroup:
+    async def update(
+        self, db: AsyncSession, *, db_obj: Subgroup, obj_in: SubgroupUpdate
+    ) -> Subgroup:
         update_data = obj_in.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_obj, field, value)
@@ -43,5 +51,6 @@ class SubgroupService:
             await db.delete(obj)
             await db.commit()
         return obj
+
 
 subgroup_service = SubgroupService()

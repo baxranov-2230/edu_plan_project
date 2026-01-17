@@ -1,3 +1,8 @@
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 import asyncio
 import logging
@@ -23,7 +28,16 @@ from app.models.subject import Subject
 
 # ... (imports)
 
+"""
+Ushbu skript ma'lumotlar bazasini boshlang'ich ma'lumotlar bilan to'ldirish uchun ishlatiladi (fakultetlar, kafedralar, fanlar va h.k).
+"""
+
+
 async def populate_db():
+    """
+    Bazani to'ldirish funksiyasi:
+    Mavjud bo'lmagan ma'lumotlarni (Subject, Faculty, Department va boshqalar) yaratadi.
+    """
     async with SessionLocal() as db:
         # ... (other code)
 
@@ -33,27 +47,27 @@ async def populate_db():
                 "name": "Algoritmlar va Ma'lumotlar Tuzilmasi",
                 "department_id": se_dept.id,
                 "credits": 6,
-                "semesters": ["3"]
+                "semesters": ["3"],
             },
             {
                 "name": "Veb Dasturlash",
                 "department_id": se_dept.id,
                 "credits": 5,
-                "semesters": ["4"]
+                "semesters": ["4"],
             },
             {
                 "name": "Mashinali O'qitish Asoslari",
                 "department_id": ai_dept.id,
                 "credits": 6,
-                "semesters": ["1"]
-            }
+                "semesters": ["1"],
+            },
         ]
 
         for subj_data in subjects_data:
             stmt = select(Subject).where(Subject.name == subj_data["name"])
             result = await db.execute(stmt)
             subj = result.scalar_one_or_none()
-            
+
             if not subj:
                 subj = Subject(**subj_data)
                 db.add(subj)
@@ -64,6 +78,7 @@ async def populate_db():
                 logger.info(f"Subject already exists: {subj.name}")
 
         logger.info("Database population completed successfully!")
+
 
 if __name__ == "__main__":
     asyncio.run(populate_db())

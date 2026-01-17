@@ -19,6 +19,17 @@ services:
       timeout: 5s
       retries: 5
 
+  # Adminer Service
+  adminer:
+    image: adminer
+    container_name: edu_plan_adminer
+    ports:
+      - "8080:8080"
+    networks:
+      - edu_network
+    depends_on:
+      - db
+
   # Backend Service
   backend:
     build:

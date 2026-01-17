@@ -8,6 +8,7 @@ from app.models.user import User
 
 router = APIRouter()
 
+
 @router.get("/", response_model=StreamList)
 async def read_streams(
     db: AsyncSession = Depends(deps.get_db),
@@ -16,9 +17,15 @@ async def read_streams(
     search: str | None = None,
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """
+    Oqimlar ro'yxatini olish.
+    """
     skip = (page - 1) * size
-    items, total = await stream_service.get_multi(db, skip=skip, limit=size, search=search)
+    items, total = await stream_service.get_multi(
+        db, skip=skip, limit=size, search=search
+    )
     return {"items": items, "total": total, "page": page, "size": size}
+
 
 @router.post("/", response_model=Stream)
 async def create_stream(
@@ -27,7 +34,11 @@ async def create_stream(
     stream_in: StreamCreate,
     current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
+    """
+    Yangi oqim yaratish.
+    """
     return await stream_service.create(db, obj_in=stream_in)
+
 
 @router.put("/{id}", response_model=Stream)
 async def update_stream(
@@ -42,6 +53,7 @@ async def update_stream(
         raise HTTPException(status_code=404, detail="Stream not found")
     return await stream_service.update(db, db_obj=stream, obj_in=stream_in)
 
+
 @router.get("/{id}", response_model=Stream)
 async def read_stream(
     *,
@@ -53,6 +65,7 @@ async def read_stream(
     if not stream:
         raise HTTPException(status_code=404, detail="Stream not found")
     return stream
+
 
 @router.delete("/{id}", response_model=Stream)
 async def delete_stream(

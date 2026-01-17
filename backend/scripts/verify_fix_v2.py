@@ -1,3 +1,7 @@
+"""
+Ro'yxatdan o'tish (register), login qilish va ma'lumot olishni to'liq tekshiruvchi skript.
+"""
+
 import requests
 import time
 
@@ -8,11 +12,7 @@ password = "testpassword123"
 # 1. Register
 print(f"Registering user {email}...")
 register_url = f"{base_url}/auth/register"
-register_data = {
-    "email": email,
-    "password": password,
-    "name": "Verifier User"
-}
+register_data = {"email": email, "password": password, "name": "Verifier User"}
 resp = requests.post(register_url, json=register_data)
 if resp.status_code not in [200, 201]:
     print(f"Registration failed: {resp.status_code}")
@@ -22,10 +22,7 @@ if resp.status_code not in [200, 201]:
 # 2. Login
 print("Logging in...")
 login_url = f"{base_url}/auth/access-token"
-login_data = {
-    "username": email,
-    "password": password
-}
+login_data = {"username": email, "password": password}
 resp = requests.post(login_url, data=login_data)
 if resp.status_code != 200:
     print(f"Login failed: {resp.status_code}")

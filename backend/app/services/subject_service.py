@@ -4,21 +4,30 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.subject import Subject
 from app.schemas.subject import SubjectCreate, SubjectUpdate
 
+
 class SubjectService:
+    """
+    Fan (Subject) servisi.
+    Fanlarni boshqarish uchun xizmat.
+    """
+
     async def get_multi(
-        self, 
-        db: AsyncSession, 
-        skip: int = 0, 
+        self,
+        db: AsyncSession,
+        skip: int = 0,
         limit: int = 100,
-        search: Optional[str] = None
+        search: Optional[str] = None,
     ) -> tuple[List[Subject], int]:
+        """
+        Fanlarni olish (qidiruv bilan).
+        """
         query = select(Subject)
         if search:
             query = query.where(Subject.name.ilike(f"%{search}%"))
-            
+
         count_query = select(func.count()).select_from(query.subquery())
         total = await db.scalar(count_query) or 0
-        
+
         result = await db.execute(query.offset(skip).limit(limit))
         return result.scalars().all(), total
 
@@ -33,7 +42,9 @@ class SubjectService:
         await db.refresh(db_obj)
         return db_obj
 
-    async def update(self, db: AsyncSession, *, db_obj: Subject, obj_in: SubjectUpdate) -> Subject:
+    async def update(
+        self, db: AsyncSession, *, db_obj: Subject, obj_in: SubjectUpdate
+    ) -> Subject:
         update_data = obj_in.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_obj, field, value)
@@ -48,5 +59,6 @@ class SubjectService:
             await db.delete(obj)
             await db.commit()
         return obj
+
 
 subject_service = SubjectService()

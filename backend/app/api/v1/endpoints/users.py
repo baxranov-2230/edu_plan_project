@@ -12,6 +12,7 @@ from app.core.rbac import Permissions
 
 router = APIRouter()
 
+
 @router.post("/", response_model=UserSchema)
 async def create_user(
     *,
@@ -20,7 +21,7 @@ async def create_user(
     current_user: User = Depends(deps.PermissionChecker(Permissions.USER_CREATE)),
 ) -> Any:
     """
-    Create new user.
+    Yangi foydalanuvchi yaratish.
     """
     user = await user_service.get_by_email(db, email=user_in.email)
     if user:
@@ -31,6 +32,7 @@ async def create_user(
     user = await user_service.create_user(db, user_in=user_in)
     return user
 
+
 @router.patch("/{user_id}", response_model=UserSchema)
 async def update_user(
     *,
@@ -40,21 +42,23 @@ async def update_user(
     current_user: User = Depends(deps.PermissionChecker(Permissions.USER_UPDATE)),
 ) -> Any:
     """
-    Update a user.
+    Foydalanuvchi ma'lumotlarini yangilash.
     """
     from sqlalchemy import select
     from app.models.user import User as UserModel
+
     result = await db.execute(select(UserModel).where(UserModel.id == user_id))
     user = result.scalars().first()
-    
+
     if not user:
         raise HTTPException(
             status_code=404,
             detail="The user with this id does not exist in the system",
         )
-    
+
     user = await user_service.update_user(db, db_user=user, user_in=user_in)
     return user
+
 
 @router.delete("/{user_id}", response_model=UserSchema)
 async def delete_user(
@@ -64,21 +68,23 @@ async def delete_user(
     current_user: User = Depends(deps.PermissionChecker(Permissions.USER_DELETE)),
 ) -> Any:
     """
-    Delete a user.
+    Foydalanuvchini o'chirish.
     """
     from sqlalchemy import select
     from app.models.user import User as UserModel
+
     result = await db.execute(select(UserModel).where(UserModel.id == user_id))
     user = result.scalars().first()
-    
+
     if not user:
         raise HTTPException(
             status_code=404,
             detail="The user with this id does not exist in the system",
         )
-    
+
     user = await user_service.delete_user(db, db_user=user)
     return user
+
 
 @router.get("/", response_model=List[UserSchema])
 async def read_users(
@@ -88,16 +94,17 @@ async def read_users(
     current_user: User = Depends(deps.PermissionChecker(Permissions.USER_READ)),
 ) -> Any:
     """
-    Retrieve users.
+    Foydalanuvchilar ro'yxatini olish.
     """
     users = await user_service.get_multi(db, skip=skip, limit=limit)
     return users
+
 
 @router.get("/me", response_model=UserSchema)
 async def read_user_me(
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Get current user.
+    Joriy foydalanuvchini olish.
     """
     return current_user

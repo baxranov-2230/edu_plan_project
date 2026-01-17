@@ -10,29 +10,32 @@ from app.core.rbac import Permissions
 
 router = APIRouter()
 
+
 @router.get("/", response_model=List[Role])
 async def read_roles(
     db: AsyncSession = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user = Depends(deps.PermissionChecker(Permissions.ROLE_READ)),
+    current_user=Depends(deps.PermissionChecker(Permissions.ROLE_READ)),
 ) -> Any:
     """
-    Retrieve roles.
+    Rollar ro'yxatini olish.
     """
     return await role_service.get_multi(db, skip=skip, limit=limit)
+
 
 @router.post("/", response_model=Role)
 async def create_role(
     *,
     db: AsyncSession = Depends(deps.get_db),
     role_in: RoleCreate,
-    current_user = Depends(deps.PermissionChecker(Permissions.ROLE_CREATE)),
+    current_user=Depends(deps.PermissionChecker(Permissions.ROLE_CREATE)),
 ) -> Any:
     """
-    Create new role.
+    Yangi rol yaratish.
     """
     return await role_service.create(db, role_in=role_in)
+
 
 @router.put("/{id}", response_model=Role)
 async def update_role(
@@ -40,7 +43,7 @@ async def update_role(
     db: AsyncSession = Depends(deps.get_db),
     id: int,
     role_in: RoleUpdate,
-    current_user = Depends(deps.PermissionChecker(Permissions.ROLE_UPDATE)),
+    current_user=Depends(deps.PermissionChecker(Permissions.ROLE_UPDATE)),
 ) -> Any:
     """
     Update a role.
@@ -50,22 +53,24 @@ async def update_role(
         raise HTTPException(status_code=404, detail="Role not found")
     return await role_service.update(db, role=role, role_in=role_in)
 
+
 @router.delete("/{id}", response_model=Role)
 async def delete_role(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user = Depends(deps.PermissionChecker(Permissions.ROLE_DELETE)),
+    current_user=Depends(deps.PermissionChecker(Permissions.ROLE_DELETE)),
 ) -> Any:
     """
     Delete a role.
     """
     return await role_service.delete(db, id=id)
 
+
 @router.get("/permissions", response_model=List[Permission])
 async def read_permissions(
     db: AsyncSession = Depends(deps.get_db),
-    current_user = Depends(deps.get_current_active_user),
+    current_user=Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Retrieve all system permissions.

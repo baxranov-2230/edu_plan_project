@@ -8,6 +8,7 @@ from app.models.user import User
 
 router = APIRouter()
 
+
 @router.get("/", response_model=SubjectList)
 async def read_subjects(
     db: AsyncSession = Depends(deps.get_db),
@@ -16,9 +17,15 @@ async def read_subjects(
     search: str | None = None,
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """
+    Fanlar ro'yxatini olish.
+    """
     skip = (page - 1) * size
-    items, total = await subject_service.get_multi(db, skip=skip, limit=size, search=search)
+    items, total = await subject_service.get_multi(
+        db, skip=skip, limit=size, search=search
+    )
     return {"items": items, "total": total, "page": page, "size": size}
+
 
 @router.post("/", response_model=Subject)
 async def create_subject(
@@ -27,7 +34,11 @@ async def create_subject(
     subject_in: SubjectCreate,
     current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
+    """
+    Yangi fan yaratish.
+    """
     return await subject_service.create(db, obj_in=subject_in)
+
 
 @router.put("/{id}", response_model=Subject)
 async def update_subject(
@@ -42,6 +53,7 @@ async def update_subject(
         raise HTTPException(status_code=404, detail="Subject not found")
     return await subject_service.update(db, db_obj=subject, obj_in=subject_in)
 
+
 @router.get("/{id}", response_model=Subject)
 async def read_subject(
     *,
@@ -53,6 +65,7 @@ async def read_subject(
     if not subject:
         raise HTTPException(status_code=404, detail="Subject not found")
     return subject
+
 
 @router.delete("/{id}", response_model=Subject)
 async def delete_subject(

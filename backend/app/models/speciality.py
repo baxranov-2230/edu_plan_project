@@ -3,11 +3,18 @@ from sqlalchemy import ForeignKey, String, Enum as SaEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base_class import Base
 
+
 class EducationType(str, Enum):
     BACHELOR = "Bakalavr"
     MASTER = "Magistr"
 
+
 class Speciality(Base):
+    """
+    Yo'nalish (Mutaxassislik) modeli.
+    Universitetdagi ta'lim yo'nalishlarini ifodalaydi.
+    """
+
     __tablename__ = "specialities"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)

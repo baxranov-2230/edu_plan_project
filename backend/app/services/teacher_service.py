@@ -4,13 +4,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.teacher import Teacher
 from app.schemas.teacher import TeacherCreate, TeacherUpdate
 
+
 class TeacherService:
+    """
+    O'qituvchi servisi.
+    O'qituvchilarni yaratish va boshqarish.
+    """
+
     async def get_multi(
-        self, 
-        db: AsyncSession, 
-        skip: int = 0, 
-        limit: int = 100
+        self, db: AsyncSession, skip: int = 0, limit: int = 100
     ) -> tuple[List[Teacher], int]:
+        """
+        O'qituvchilarni olish.
+        """
         query = select(Teacher)
         count_query = select(func.count()).select_from(query.subquery())
         total = await db.scalar(count_query) or 0
@@ -28,7 +34,9 @@ class TeacherService:
         await db.refresh(db_obj)
         return db_obj
 
-    async def update(self, db: AsyncSession, *, db_obj: Teacher, obj_in: TeacherUpdate) -> Teacher:
+    async def update(
+        self, db: AsyncSession, *, db_obj: Teacher, obj_in: TeacherUpdate
+    ) -> Teacher:
         update_data = obj_in.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_obj, field, value)
@@ -43,5 +51,6 @@ class TeacherService:
             await db.delete(obj)
             await db.commit()
         return obj
+
 
 teacher_service = TeacherService()

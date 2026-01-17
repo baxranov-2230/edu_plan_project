@@ -7,19 +7,22 @@ from .subgroup import Subgroup
 from .stream import Stream
 from .edu_plan import EduPlan
 
+
 class WorkloadBase(BaseModel):
     subject_id: int
     edu_plan_id: Optional[int] = None
     load_type: LoadType
     hours: int
     name: Optional[str] = None
-    
+
     stream_id: Optional[int] = None
     group_id: Optional[int] = None
     subgroup_id: Optional[int] = None
 
+
 class WorkloadCreate(WorkloadBase):
     pass
+
 
 class WorkloadUpdate(BaseModel):
     subject_id: Optional[int] = None
@@ -27,10 +30,11 @@ class WorkloadUpdate(BaseModel):
     load_type: Optional[LoadType] = None
     hours: Optional[int] = None
     name: Optional[str] = None
-    
+
     stream_id: Optional[int] = None
     group_id: Optional[int] = None
     subgroup_id: Optional[int] = None
+
 
 class BatchWorkloadItem(BaseModel):
     load_type: LoadType
@@ -38,21 +42,24 @@ class BatchWorkloadItem(BaseModel):
     stream_ids: List[int] = []
     group_ids: List[int] = []
 
+
 class WorkloadBatchCreate(BaseModel):
     subject_id: int
     edu_plan_id: Optional[int] = None
     name: Optional[str] = None
     items: List[BatchWorkloadItem]
 
+
 class WorkloadGroupUpdate(BaseModel):
-    subject_id: int # The ID to search for (original)
-    new_subject_id: Optional[int] = None # If changing the subject
-    new_name: Optional[str] = None # If changing the name
-    new_edu_plan_id: Optional[int] = None 
+    subject_id: int  # The ID to search for (original)
+    new_subject_id: Optional[int] = None  # If changing the subject
+    new_name: Optional[str] = None  # If changing the name
+    new_edu_plan_id: Optional[int] = None
+
 
 class Workload(WorkloadBase):
     id: int
-    
+
     # Nested objects for display
     subject: Optional[Subject] = None
     edu_plan: Optional[EduPlan] = None
@@ -62,6 +69,7 @@ class Workload(WorkloadBase):
 
     class Config:
         from_attributes = True
+
 
 class WorkloadList(BaseModel):
     items: List[Workload]

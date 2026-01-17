@@ -4,11 +4,19 @@ from sqlalchemy import select, func
 from app.models.edu_plan import EduPlan
 from app.schemas.edu_plan import EduPlanCreate, EduPlanUpdate
 
+
 class EduPlanService:
-    async def get_multi(self, db: AsyncSession, skip: int = 0, limit: int = 100) -> List[EduPlan]:
+    """
+    O'quv rejasi servisi.
+    O'quv rejalari (EduPlan) ni yaratish, o'qish, yangilash va o'chirish uchun xizmat qiladi.
+    """
+
+    async def get_multi(
+        self, db: AsyncSession, skip: int = 0, limit: int = 100
+    ) -> List[EduPlan]:
         result = await db.execute(select(EduPlan).offset(skip).limit(limit))
         return result.scalars().all()
-    
+
     async def get_total_count(self, db: AsyncSession) -> int:
         result = await db.execute(select(func.count(EduPlan.id)))
         return result.scalar()
@@ -21,21 +29,23 @@ class EduPlanService:
         db_obj = EduPlan(
             name=obj_in.name,
             speciality_id=obj_in.speciality_id,
-            is_active=obj_in.is_active
+            is_active=obj_in.is_active,
         )
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
         return db_obj
 
-    async def update(self, db: AsyncSession, db_obj: EduPlan, obj_in: EduPlanUpdate) -> EduPlan:
+    async def update(
+        self, db: AsyncSession, db_obj: EduPlan, obj_in: EduPlanUpdate
+    ) -> EduPlan:
         if obj_in.name is not None:
             db_obj.name = obj_in.name
         if obj_in.speciality_id is not None:
             db_obj.speciality_id = obj_in.speciality_id
         if obj_in.is_active is not None:
             db_obj.is_active = obj_in.is_active
-            
+
         await db.commit()
         await db.refresh(db_obj)
         return db_obj
@@ -46,5 +56,6 @@ class EduPlanService:
             await db.delete(obj)
             await db.commit()
         return obj
+
 
 edu_plan_service = EduPlanService()

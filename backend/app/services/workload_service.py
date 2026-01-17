@@ -6,41 +6,61 @@ from app.models.workload import Workload, LoadType
 from app.models.group import Group
 from app.models.stream import Stream
 from app.models.subgroup import Subgroup
-from app.schemas.workload import WorkloadCreate, WorkloadUpdate, WorkloadBatchCreate, WorkloadGroupUpdate
+from app.schemas.workload import (
+    WorkloadCreate,
+    WorkloadUpdate,
+    WorkloadBatchCreate,
+    WorkloadGroupUpdate,
+)
+
 
 class WorkloadService:
+    """
+    Yuklama (Workload) servisi.
+    Yuklamalarni yaratish, taqsimlash va boshqarish.
+    Eng murakkab logika shu yerda joylashgan (Batch create, Split logic).
+    """
+
     async def get_multi(
-        self, 
-        db: AsyncSession, 
-        skip: int = 0, 
+        self,
+        db: AsyncSession,
+        skip: int = 0,
         limit: int = 100,
-        edu_plan_id: Optional[int] = None
+        edu_plan_id: Optional[int] = None,
     ) -> tuple[List[Workload], int]:
+        """
+        Yuklamalarni olish.
+        Barcha bog'liq ma'lumotlarni (fan, o'qituvchi, guruh) yuklaydi.
+        """
         # Eager load relationships to avoid MissingGreenlet and explicit IDs
         # We need to load stream.groups because Stream schema includes it
         query = select(Workload).options(
             selectinload(Workload.subject),
             selectinload(Workload.edu_plan),
-            selectinload(Workload.stream).selectinload(Stream.groups), 
+            selectinload(Workload.stream).selectinload(Stream.groups),
             selectinload(Workload.group),
-            selectinload(Workload.subgroup)
+            selectinload(Workload.subgroup),
         )
-        
+
         if edu_plan_id:
             query = query.where(Workload.edu_plan_id == edu_plan_id)
-        
+
         count_query = select(func.count()).select_from(query.subquery())
         total = await db.scalar(count_query) or 0
         result = await db.execute(query.offset(skip).limit(limit))
         return result.scalars().all(), total
 
     async def get(self, db: AsyncSession, id: int) -> Optional[Workload]:
-        query = select(Workload).where(Workload.id == id).options(
-            selectinload(Workload.subject),
-            selectinload(Workload.edu_plan),
-            selectinload(Workload.stream).selectinload(Stream.groups),
-            selectinload(Workload.group),
-            selectinload(Workload.subgroup)
+        query = (
+            select(Workload)
+            .where(Workload.id == id)
+            .options(
+                selectinload(Workload.subject),
+                selectinload(Workload.edu_plan),
+                selectinload(Workload.stream).selectinload(Stream.groups),
+                selectinload(Workload.group),
+                selectinload(Workload.subgroup),
+            )
         )
         result = await db.execute(query)
         return result.scalars().first()
@@ -54,7 +74,9 @@ class WorkloadService:
         await db.refresh(db_obj)
         return await self.get(db, db_obj.id)
 
-    async def update(self, db: AsyncSession, *, db_obj: Workload, obj_in: WorkloadUpdate) -> Workload:
+    async def update(
+        self, db: AsyncSession, *, db_obj: Workload, obj_in: WorkloadUpdate
+    ) -> Workload:
         update_data = obj_in.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_obj, field, value)
@@ -70,9 +92,16 @@ class WorkloadService:
             await db.commit()
         return obj
 
-    async def create_batch(self, db: AsyncSession, obj_in: WorkloadBatchCreate) -> List[Workload]:
+    async def create_batch(
+        self, db: AsyncSession, obj_in: WorkloadBatchCreate
+    ) -> List[Workload]:
+        """
+        Yuklamalarni ommaviy yaratish (Batch Create).
+        Dars turiga qarab (Ma'ruza, Amaliyot, Lab) yuklamalarni oqim yoki guruhlarga bo'lib chiqadi.
+        Laboratoriya uchun guruhni guruhchalarga (podguruh) bo'lishni ham qo'llab-quvvatlaydi.
+        """
         created_workloads = []
-        
+
         for item in obj_in.items:
             # Prepare common data
             common_data = {
@@ -80,56 +109,62 @@ class WorkloadService:
                 "edu_plan_id": obj_in.edu_plan_id,
                 "load_type": item.load_type,
                 "hours": item.hours,
-                "name": obj_in.name
+                "name": obj_in.name,
             }
-            
+
             if item.load_type == LoadType.LECTURE:
                 # Create for each stream
                 for stream_id in item.stream_ids:
                     workload = Workload(**common_data, stream_id=stream_id)
                     db.add(workload)
                     created_workloads.append(workload)
-                    
+
             elif item.load_type == LoadType.PRACTICE:
-                 # Create for each group
+                # Create for each group
                 for group_id in item.group_ids:
                     workload = Workload(**common_data, group_id=group_id)
                     db.add(workload)
                     created_workloads.append(workload)
-                    
+
             elif item.load_type == LoadType.LAB:
-                 # Create for each group, checking for split
+                # Create for each group, checking for split
                 for group_id in item.group_ids:
                     # Fetch group to check split
-                    group_result = await db.execute(select(Group).where(Group.id == group_id))
+                    group_result = await db.execute(
+                        select(Group).where(Group.id == group_id)
+                    )
                     group = group_result.scalars().first()
-                    
+
                     if group and group.he_lab_split:
                         # Ensure subgroups exist or fetch them
-                        subgroups_result = await db.execute(select(Subgroup).where(Subgroup.group_id == group_id))
+                        subgroups_result = await db.execute(
+                            select(Subgroup).where(Subgroup.group_id == group_id)
+                        )
                         subgroups = subgroups_result.scalars().all()
-                        
+
                         if not subgroups:
                             # Create default subgroups if none exist
                             sg1 = Subgroup(name="1-guruhcha", group_id=group_id)
                             sg2 = Subgroup(name="2-guruhcha", group_id=group_id)
                             db.add(sg1)
                             db.add(sg2)
-                            await db.flush() # Get IDs
+                            await db.flush()  # Get IDs
                             subgroups = [sg1, sg2]
                         elif len(subgroups) == 1:
-                             # Should have at least 2? Let's just create one more if only 1
-                             sg2 = Subgroup(name="2-guruhcha", group_id=group_id)
-                             db.add(sg2)
-                             await db.flush()
-                             subgroups.append(sg2)
+                            # Should have at least 2? Let's just create one more if only 1
+                            sg2 = Subgroup(name="2-guruhcha", group_id=group_id)
+                            db.add(sg2)
+                            await db.flush()
+                            subgroups.append(sg2)
 
                         # Create workload for each subgroup
                         for sg in subgroups[:2]:
-                            workload = Workload(**common_data, group_id=group_id, subgroup_id=sg.id)
+                            workload = Workload(
+                                **common_data, group_id=group_id, subgroup_id=sg.id
+                            )
                             db.add(workload)
                             created_workloads.append(workload)
-                            
+
                     else:
                         # No split, just group
                         workload = Workload(**common_data, group_id=group_id)
@@ -137,43 +172,49 @@ class WorkloadService:
                         created_workloads.append(workload)
 
         await db.commit()
-        
+
         # Re-fetch created workloads with eager loading to satisfy schema
         if not created_workloads:
-             return []
-             
+            return []
+
         created_ids = [w.id for w in created_workloads]
-        query = select(Workload).where(Workload.id.in_(created_ids)).options(
-            selectinload(Workload.subject),
-            selectinload(Workload.edu_plan),
-            selectinload(Workload.stream).selectinload(Stream.groups),
-            selectinload(Workload.group),
-            selectinload(Workload.subgroup)
+        query = (
+            select(Workload)
+            .where(Workload.id.in_(created_ids))
+            .options(
+                selectinload(Workload.subject),
+                selectinload(Workload.edu_plan),
+                selectinload(Workload.stream).selectinload(Stream.groups),
+                selectinload(Workload.group),
+                selectinload(Workload.subgroup),
+            )
         )
         result = await db.execute(query)
         fetched_workloads = result.scalars().all()
         return fetched_workloads
-    
-    async def update_by_subject(self, db: AsyncSession, obj_in: WorkloadGroupUpdate) -> int:
+
+    async def update_by_subject(
+        self, db: AsyncSession, obj_in: WorkloadGroupUpdate
+    ) -> int:
         """
         Updates name and/or subject_id for all workloads matching the validation criteria.
         Returns number of updated rows.
         """
         stmt = update(Workload).where(Workload.subject_id == obj_in.subject_id)
-        
+
         values = {}
         if obj_in.new_name is not None:
             values["name"] = obj_in.new_name
-        
+
         if obj_in.new_subject_id is not None:
-             values["subject_id"] = obj_in.new_subject_id
+            values["subject_id"] = obj_in.new_subject_id
 
         if obj_in.new_edu_plan_id is not None:
-             values["edu_plan_id"] = obj_in.new_edu_plan_id
-             
+            values["edu_plan_id"] = obj_in.new_edu_plan_id
+
         if not values:
             return 0
-            
+
         stmt = stmt.values(**values)
         result = await db.execute(stmt)
         await db.commit()
@@ -185,9 +226,11 @@ class WorkloadService:
         Returns number of deleted rows.
         """
         from sqlalchemy import delete
+
         stmt = delete(Workload).where(Workload.subject_id == subject_id)
         result = await db.execute(stmt)
         await db.commit()
         return result.rowcount
+
 
 workload_service = WorkloadService()

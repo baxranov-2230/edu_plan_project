@@ -2,11 +2,20 @@ from sqlalchemy import String, Integer, ForeignKey, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base_class import Base
 
+
 class EduPlan(Base):
+    """
+    O'quv rejasi modeli.
+    Ma'lum bir yo'nalish (speciality) uchun o'quv rejasini ifodalaydi.
+    O'z ichiga yuklamalarni (workloads) oladi.
+    """
+
     __tablename__ = "edu_plans"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String, index=True) # e.g., "2023-2024 O'quv Rejasi"
+    name: Mapped[str] = mapped_column(
+        String, index=True
+    )  # e.g., "2023-2024 O'quv Rejasi"
     speciality_id: Mapped[int] = mapped_column(ForeignKey("specialities.id"))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 

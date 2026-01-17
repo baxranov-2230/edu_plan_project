@@ -8,6 +8,7 @@ from app.models.user import User
 
 router = APIRouter()
 
+
 @router.get("/", response_model=GroupList)
 async def read_groups(
     db: AsyncSession = Depends(deps.get_db),
@@ -16,9 +17,15 @@ async def read_groups(
     search: str | None = None,
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
+    """
+    Guruhlar ro'yxatini olish.
+    """
     skip = (page - 1) * size
-    items, total = await group_service.get_multi(db, skip=skip, limit=size, search=search)
+    items, total = await group_service.get_multi(
+        db, skip=skip, limit=size, search=search
+    )
     return {"items": items, "total": total, "page": page, "size": size}
+
 
 @router.post("/", response_model=Group)
 async def create_group(
@@ -27,7 +34,11 @@ async def create_group(
     group_in: GroupCreate,
     current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
+    """
+    Yangi guruh yaratish.
+    """
     return await group_service.create(db, obj_in=group_in)
+
 
 @router.put("/{id}", response_model=Group)
 async def update_group(
@@ -42,6 +53,7 @@ async def update_group(
         raise HTTPException(status_code=404, detail="Group not found")
     return await group_service.update(db, db_obj=group, obj_in=group_in)
 
+
 @router.get("/{id}", response_model=Group)
 async def read_group(
     *,
@@ -53,6 +65,7 @@ async def read_group(
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
     return group
+
 
 @router.delete("/{id}", response_model=Group)
 async def delete_group(
