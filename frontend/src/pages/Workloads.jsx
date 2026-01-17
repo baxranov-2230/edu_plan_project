@@ -24,7 +24,7 @@ import { useGroups } from '../hooks/useGroups';
 import { useEduPlans } from '../hooks/useEduPlans';
 import { useDepartments } from '../hooks/useDepartments';
 
-const Row = ({ row, onDelete, onEdit, onGroupEdit, onGroupDelete }) => {
+const Row = ({ row, onDelete, onEdit, onGroupEdit, onGroupDelete, onAdd }) => {
     const [open, setOpen] = useState(false);
 
     // Aggregates
@@ -87,6 +87,11 @@ const Row = ({ row, onDelete, onEdit, onGroupEdit, onGroupDelete }) => {
                         <Tooltip title="Guruhni Tahrirlash (Global Update)">
                             <IconButton size="small" onClick={(e) => { e.stopPropagation(); onGroupEdit(row); }} className="text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400">
                                 <EditIcon fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Yangi yuklama qo'shish">
+                            <IconButton size="small" onClick={(e) => { e.stopPropagation(); onAdd(row); }} className="text-slate-400 hover:text-green-600 dark:text-slate-500 dark:hover:text-green-400">
+                                <AddIcon fontSize="small" />
                             </IconButton>
                         </Tooltip>
                         <Tooltip title="Guruhni O'chirish (Batch Delete)">
@@ -242,7 +247,28 @@ const Workloads = () => {
 
     const handleOpenBatch = () => {
         setBatchData({
-            edu_plan_id: '', department_id: '', subject_id: '', semester: 'kuzgi',
+            edu_plan_id: '', department_id: '', subject_id: '', semester: 'kuzgi', name: '',
+            hasLecture: false, hasPractice: false, hasLab: false, hasSeminar: false,
+            lectureHours: 0, lectureStreams: [],
+            practiceHours: 0, practiceGroups: [],
+            labHours: 0, labGroups: [],
+            seminarHours: 0, seminarGroups: [],
+        });
+        setOpenBatch(true);
+    };
+
+    const handleAddFromGroup = (row) => {
+        // Find context from existing items
+        const sampleWorkload = workloadsData?.items?.find(w => w.subject?.id === row.subject_id);
+
+        setBatchData({
+            edu_plan_id: sampleWorkload?.edu_plan_id || '',
+            department_id: sampleWorkload?.subject?.department_id || '',
+            subject_id: row.subject_id,
+            semester: 'kuzgi', // Default
+            name: row.name || '',
+
+            // Clean other fields
             hasLecture: false, hasPractice: false, hasLab: false, hasSeminar: false,
             lectureHours: 0, lectureStreams: [],
             practiceHours: 0, practiceGroups: [],
@@ -310,7 +336,7 @@ const Workloads = () => {
         setGroupEditData({
             new_subject_id: row.subject_id,
             new_name: row.name || '',
-            department_id: '',
+            department_id: sampleWorkload?.subject?.department_id || '',
             new_edu_plan_id: sampleWorkload?.edu_plan_id || ''
         });
         setOpenGroupEdit(true);
@@ -383,6 +409,7 @@ const Workloads = () => {
                                 onEdit={handleOpenEdit}
                                 onGroupEdit={handleOpenGroupEdit}
                                 onGroupDelete={handleGroupDelete}
+                                onAdd={handleAddFromGroup}
                             />
                         ))}
                     </TableBody>
