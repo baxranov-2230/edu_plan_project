@@ -188,6 +188,9 @@ const Workloads = () => {
     const [groupEditItem, setGroupEditItem] = useState(null);
     const [groupEditData, setGroupEditData] = useState({ new_subject_id: '', new_name: '', department_id: '', new_edu_plan_id: '' });
 
+    // Batch Edit Context (for adding to existing)
+    const [editingBatchRow, setEditingBatchRow] = useState(null);
+
     // Data Hooks
     const { data: workloadsData, isLoading } = useWorkloads({ page, size, edu_plan_id: eduPlanIdParam });
     const { data: subjectsData } = useSubjects({ size: 100 });
@@ -254,50 +257,96 @@ const Workloads = () => {
             labHours: 0, labGroups: [],
             seminarHours: 0, seminarGroups: [],
         });
+        setEditingBatchRow(null);
         setOpenBatch(true);
     };
 
     const handleAddFromGroup = (row) => {
         // Find context from existing items
-        const sampleWorkload = workloadsData?.items?.find(w => w.subject?.id === row.subject_id);
+        const items = row.items || [];
+        const sampleWorkload = items[0] || workloadsData?.items?.find(w => w.subject?.id === row.subject_id);
+
+        // Extract existing state
+        const lectures = items.filter(i => i.load_type === 'lecture');
+        const practices = items.filter(i => i.load_type === 'practice');
+        const labs = items.filter(i => i.load_type === 'lab');
+        const seminars = items.filter(i => i.load_type === 'seminar');
+
+        setEditingBatchRow(row); // Store for diffing later
 
         setBatchData({
             edu_plan_id: sampleWorkload?.edu_plan_id || '',
             department_id: sampleWorkload?.subject?.department_id || '',
             subject_id: row.subject_id,
-            semester: 'kuzgi', // Default
+            semester: 'kuzgi', // Default, or try to infer?
             name: row.name || '',
 
-            // Clean other fields
-            hasLecture: false, hasPractice: false, hasLab: false, hasSeminar: false,
-            lectureHours: 0, lectureStreams: [],
-            practiceHours: 0, practiceGroups: [],
-            labHours: 0, labGroups: [],
-            seminarHours: 0, seminarGroups: [],
+            // Pre-fill fields
+            hasLecture: lectures.length > 0,
+            lectureHours: lectures[0]?.hours || 0,
+            lectureStreams: lectures.map(i => i.stream_id).filter(Boolean),
+
+            hasPractice: practices.length > 0,
+            practiceHours: practices[0]?.hours || 0,
+            practiceGroups: practices.map(i => i.group_id).filter(Boolean),
+
+            hasLab: labs.length > 0,
+            labHours: labs[0]?.hours || 0,
+            labGroups: labs.map(i => i.group_id).filter(Boolean),
+
+            hasSeminar: seminars.length > 0,
+            seminarHours: seminars[0]?.hours || 0,
+            seminarGroups: seminars.map(i => i.group_id).filter(Boolean),
         });
         setOpenBatch(true);
     };
 
     const handleBatchSubmit = async () => {
         const items = [];
+
+        // Helper to get NEW ids only
+        const getNewIds = (selectedIds, type, idField = 'group_id') => {
+            if (!editingBatchRow) return selectedIds; // specific logic if needed, or just return all
+            const existingIds = editingBatchRow.items
+                .filter(i => i.load_type === type)
+                .map(i => i[idField]);
+            return selectedIds.filter(id => !existingIds.includes(id));
+        };
+
         if (batchData.hasLecture && batchData.lectureHours > 0 && batchData.lectureStreams.length > 0) {
-            items.push({ load_type: 'lecture', hours: parseInt(batchData.lectureHours), stream_ids: batchData.lectureStreams, group_ids: [] });
+            const newStreams = getNewIds(batchData.lectureStreams, 'lecture', 'stream_id');
+            if (newStreams.length > 0) {
+                items.push({ load_type: 'lecture', hours: parseInt(batchData.lectureHours), stream_ids: newStreams, group_ids: [] });
+            }
         }
         if (batchData.hasPractice && batchData.practiceHours > 0 && batchData.practiceGroups.length > 0) {
-            items.push({ load_type: 'practice', hours: parseInt(batchData.practiceHours), stream_ids: [], group_ids: batchData.practiceGroups });
+            const newGroups = getNewIds(batchData.practiceGroups, 'practice', 'group_id');
+            if (newGroups.length > 0) {
+                items.push({ load_type: 'practice', hours: parseInt(batchData.practiceHours), stream_ids: [], group_ids: newGroups });
+            }
         }
         if (batchData.hasLab && batchData.labHours > 0 && batchData.labGroups.length > 0) {
-            items.push({ load_type: 'lab', hours: parseInt(batchData.labHours), stream_ids: [], group_ids: batchData.labGroups });
+            const newGroups = getNewIds(batchData.labGroups, 'lab', 'group_id');
+            if (newGroups.length > 0) {
+                items.push({ load_type: 'lab', hours: parseInt(batchData.labHours), stream_ids: [], group_ids: newGroups });
+            }
         }
         if (batchData.hasSeminar && batchData.seminarHours > 0 && batchData.seminarGroups.length > 0) {
-            items.push({ load_type: 'seminar', hours: parseInt(batchData.seminarHours), stream_ids: [], group_ids: batchData.seminarGroups });
+            const newGroups = getNewIds(batchData.seminarGroups, 'seminar', 'group_id');
+            if (newGroups.length > 0) {
+                items.push({ load_type: 'seminar', hours: parseInt(batchData.seminarHours), stream_ids: [], group_ids: newGroups });
+            }
         }
-        if (items.length === 0) return alert("Kamida bitta yuklama turini tanlang.");
+
+        if (items.length === 0) {
+            if (editingBatchRow) return alert("Yangi yuklama qo'shilmadi (barchasi allaqachon mavjud).");
+            return alert("Kamida bitta yuklama turini tanlang.");
+        }
 
         await createBatchMutation.mutateAsync({
             subject_id: batchData.subject_id,
-            edu_plan_id: batchData.edu_plan_id || null,
-            name: null, // Removed name input
+            edu_plan_id: batchData.edu_plan_id || null, // Should we allow empty?
+            name: batchData.name || null,
             items: items
         });
         setOpenBatch(false);
