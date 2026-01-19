@@ -25,6 +25,6 @@ __pycache__/
 *$py.class
 venv/
 env/
-.env
+# .env
 *.sqlite3
 celerybeat-schedule
