@@ -2,7 +2,7 @@ import axios from 'axios';
 import useAuthStore from '../store/authStore';
 
 // Access environment variable, fallback to localhost for dev
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const baseURL = import.meta.env.VITE_API_URL || '/rest/api/v1';
 
 const api = axios.create({
     baseURL,

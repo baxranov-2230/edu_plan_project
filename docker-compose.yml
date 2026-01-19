@@ -5,12 +5,14 @@ services:
   db:
     image: postgres:15-alpine
     container_name: edu_plan_db
+    restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
       - ./backend/.env
-    ports:
-      - "5433:5432"
+    # Internal port only, not exposed to host for security
+    expose:
+      - "5432"
     networks:
       - edu_network
     healthcheck:
@@ -19,26 +21,13 @@ services:
       timeout: 5s
       retries: 5
 
-  # Adminer Service
-  adminer:
-    image: adminer
-    container_name: edu_plan_adminer
-    ports:
-      - "8080:8080"
-    networks:
-      - edu_network
-    depends_on:
-      - db
-
   # Backend Service
   backend:
     build:
       context: ./backend
     container_name: edu_plan_backend
-    volumes:
-      - ./backend:/app
-    ports:
-      - "8000:8000"
+    restart: always
+    # No volume mount for code - use built image
     env_file:
       - ./backend/.env
     depends_on:
@@ -52,15 +41,26 @@ services:
     build:
       context: ./frontend
     container_name: edu_plan_frontend
-    volumes:
-      - ./frontend/src:/app/src
-      - /app/node_modules
-    ports:
-      - "5173:5173"
+    restart: always
+    # No volume mount - uses internal Nginx
     env_file:
       - ./frontend/.env
-
     depends_on:
+      - backend
+    networks:
+      - edu_network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: edu_plan_nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
       - backend
     networks:
       - edu_network

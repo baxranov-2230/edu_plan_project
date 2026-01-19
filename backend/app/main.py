@@ -8,22 +8,15 @@ from app.db import base
 
 
 app = FastAPI(
-    title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    root_path="/rest",
 )
 
 # Set all CORS enabled origins
-# Hardcoded CORS origins as requested
-origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://0.0.0.0:5173",
-    "http://127.0.0.1:5173",
-    "http://0.0.0.0:3000",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # Allows all origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
