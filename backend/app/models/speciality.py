@@ -20,7 +20,7 @@ class Speciality(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String, unique=True, index=True)
     department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"))
-    education_type: Mapped[EducationType] = mapped_column(SaEnum(EducationType))
+    education_type: Mapped[EducationType] = mapped_column(String)
 
     # Relationships
     department = relationship("Department", back_populates="specialities")
