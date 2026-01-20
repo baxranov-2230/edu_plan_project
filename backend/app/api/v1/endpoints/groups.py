@@ -1,6 +1,7 @@
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.rbac import Permissions
 from app.api import deps
 from app.schemas.group import Group, GroupCreate, GroupUpdate, GroupList
 from app.services.group_service import group_service
@@ -15,7 +16,7 @@ async def read_groups(
     page: int = 1,
     size: int = 20,
     search: str | None = None,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.GROUP_READ)),
 ) -> Any:
     """
     Guruhlar ro'yxatini olish.
@@ -32,7 +33,7 @@ async def create_group(
     *,
     db: AsyncSession = Depends(deps.get_db),
     group_in: GroupCreate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.GROUP_CREATE)),
 ) -> Any:
     """
     Yangi guruh yaratish.
@@ -46,7 +47,7 @@ async def update_group(
     db: AsyncSession = Depends(deps.get_db),
     id: int,
     group_in: GroupUpdate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.GROUP_UPDATE)),
 ) -> Any:
     group = await group_service.get(db, id=id)
     if not group:
@@ -59,7 +60,7 @@ async def read_group(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.GROUP_READ)),
 ) -> Any:
     group = await group_service.get(db, id=id)
     if not group:
@@ -72,6 +73,6 @@ async def delete_group(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.GROUP_DELETE)),
 ) -> Any:
     return await group_service.delete(db, id=id)

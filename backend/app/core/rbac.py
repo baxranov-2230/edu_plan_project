@@ -18,6 +18,11 @@ class Permissions:
     USER_UPDATE = "user:update"
     USER_DELETE = "user:delete"
 
+    GROUP_READ = "group:read"
+    GROUP_CREATE = "group:create"
+    GROUP_UPDATE = "group:update"
+    GROUP_DELETE = "group:delete"
+
     ROLE_READ = "role:read"
     ROLE_CREATE = "role:create"
     ROLE_UPDATE = "role:update"
@@ -35,6 +40,7 @@ ROLE_PERMISSIONS: Dict[str, List[str]] = {
         Permissions.FACULTY_READ,
         Permissions.DEPARTMENT_READ,
         Permissions.SPECIALITY_READ,
+        Permissions.GROUP_READ,
     ],
     "teacher": [
         Permissions.FACULTY_READ,
@@ -63,6 +69,10 @@ ROLE_PERMISSIONS: Dict[str, List[str]] = {
         Permissions.SPECIALITY_CREATE,
         Permissions.SPECIALITY_UPDATE,
         Permissions.SPECIALITY_DELETE,
+        Permissions.GROUP_READ,
+        Permissions.GROUP_CREATE,
+        Permissions.GROUP_UPDATE,
+        Permissions.GROUP_DELETE,
     ],
 }
 
