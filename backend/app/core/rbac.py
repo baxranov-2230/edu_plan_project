@@ -1,17 +1,18 @@
 from typing import List, Dict
 
+
 # Permission Constants
 class Permissions:
     FACULTY_READ = "faculty:read"
     FACULTY_CREATE = "faculty:create"
     FACULTY_UPDATE = "faculty:update"
     FACULTY_DELETE = "faculty:delete"
-    
+
     DEPARTMENT_READ = "department:read"
     DEPARTMENT_CREATE = "department:create"
     DEPARTMENT_UPDATE = "department:update"
     DEPARTMENT_DELETE = "department:delete"
-    
+
     USER_READ = "user:read"
     USER_CREATE = "user:create"
     USER_UPDATE = "user:update"
@@ -22,15 +23,23 @@ class Permissions:
     ROLE_UPDATE = "role:update"
     ROLE_DELETE = "role:delete"
 
+    SPECIALITY_READ = "speciality:read"
+    SPECIALITY_CREATE = "speciality:create"
+    SPECIALITY_UPDATE = "speciality:update"
+    SPECIALITY_DELETE = "speciality:delete"
+
+
 # Role Mapping
 ROLE_PERMISSIONS: Dict[str, List[str]] = {
     "student": [
         Permissions.FACULTY_READ,
         Permissions.DEPARTMENT_READ,
+        Permissions.SPECIALITY_READ,
     ],
     "teacher": [
         Permissions.FACULTY_READ,
         Permissions.DEPARTMENT_READ,
+        Permissions.SPECIALITY_READ,
         # Maybe add some course related permissions later
     ],
     "admin": [
@@ -50,13 +59,18 @@ ROLE_PERMISSIONS: Dict[str, List[str]] = {
         Permissions.ROLE_CREATE,
         Permissions.ROLE_UPDATE,
         Permissions.ROLE_DELETE,
-    ]
+        Permissions.SPECIALITY_READ,
+        Permissions.SPECIALITY_CREATE,
+        Permissions.SPECIALITY_UPDATE,
+        Permissions.SPECIALITY_DELETE,
+    ],
 }
+
 
 def get_role_permissions(roles: str | List[str]) -> List[str]:
     if isinstance(roles, str):
         return ROLE_PERMISSIONS.get(roles, [])
-    
+
     # If list, merge unique permissions
     permissions = set()
     for role in roles:

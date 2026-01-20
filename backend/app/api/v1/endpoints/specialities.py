@@ -2,6 +2,7 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.rbac import Permissions
 from app.api import deps
 from app.schemas.speciality import (
     Speciality,
@@ -23,7 +24,7 @@ async def read_specialities(
     search: str | None = None,
     department_id: int | None = None,
     education_type: str | None = None,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.SPECIALITY_READ)),
 ) -> Any:
     """
     Yo'nalishlar ro'yxatini olish.
@@ -47,7 +48,7 @@ async def create_speciality(
     *,
     db: AsyncSession = Depends(deps.get_db),
     speciality_in: SpecialityCreate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.SPECIALITY_CREATE)),
 ) -> Any:
     """
     Yangi yo'nalish yaratish.
@@ -61,7 +62,7 @@ async def update_speciality(
     db: AsyncSession = Depends(deps.get_db),
     id: int,
     speciality_in: SpecialityUpdate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.SPECIALITY_UPDATE)),
 ) -> Any:
     """
     Yo'nalish ma'lumotlarini yangilash.
@@ -77,7 +78,7 @@ async def read_speciality(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.SPECIALITY_READ)),
 ) -> Any:
     """
     Yo'nalishni ID orqali olish.
@@ -93,7 +94,7 @@ async def delete_speciality(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.SPECIALITY_DELETE)),
 ) -> Any:
     """
     Yo'nalishni o'chirish.
