@@ -9,8 +9,12 @@ from sqlalchemy.orm import selectinload
 from app.db.session import SessionLocal
 from app.models.user import User
 from app.models.role import Role
+from app.db import base  # Register all models for SQLAlchemy
+from app.models.user import User
+from app.models.role import Role
 from app.models.department import Department
 from app.models.faculty import Faculty
+from app.models.speciality import Speciality
 from app.core.security import get_password_hash
 
 """
