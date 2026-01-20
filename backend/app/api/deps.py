@@ -14,17 +14,15 @@ from app.schemas.token import TokenPayload
 from app.db.session import get_db
 
 reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/auth/access-token"
+    tokenUrl=f"/rest{settings.API_V1_STR}/auth/access-token"
 )
 
+
 async def get_current_user(
-    db: AsyncSession = Depends(get_db),
-    token: str = Depends(reusable_oauth2)
+    db: AsyncSession = Depends(get_db), token: str = Depends(reusable_oauth2)
 ) -> User:
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
         token_data = TokenPayload(**payload)
     except (JWTError, ValidationError) as e:
         print(f"DEBUG: JWT Validation Error: {e}")
@@ -32,15 +30,17 @@ async def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
-    
+
     # Async query to get user
     from sqlalchemy import select
+
     result = await db.execute(select(User).where(User.id == int(token_data.sub)))
     user = result.scalars().first()
-    
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
 
 async def get_current_active_user(
     current_user: User = Depends(get_current_user),
@@ -48,6 +48,7 @@ async def get_current_active_user(
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
 
 async def get_current_active_superuser(
     current_user: User = Depends(get_current_active_user),
@@ -58,7 +59,9 @@ async def get_current_active_superuser(
         )
     return current_user
 
+
 from app.core.rbac import get_role_permissions, Permissions
+
 
 class PermissionChecker:
     def __init__(self, required_permission: str):
@@ -67,11 +70,11 @@ class PermissionChecker:
     def __call__(self, user: User = Depends(get_current_active_user)) -> User:
         if user.is_superuser:
             return user
-            
+
         user_permissions = get_role_permissions([r.name for r in user.roles])
         if self.required_permission not in user_permissions:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Operation not permitted. Required: {self.required_permission}"
+                detail=f"Operation not permitted. Required: {self.required_permission}",
             )
         return user
