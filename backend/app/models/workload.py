@@ -29,7 +29,7 @@ class Workload(Base):
     subject_id: Mapped[int] = mapped_column(ForeignKey("subjects.id"))
 
     # 2. DARS TURI
-    load_type: Mapped[LoadType] = mapped_column(SaEnum(LoadType))
+    load_type: Mapped[LoadType] = mapped_column(String)
 
     # 3. KIMGA O'TILADI? (Primary Target based on Load Type)
     stream_id: Mapped[Optional[int]] = mapped_column(

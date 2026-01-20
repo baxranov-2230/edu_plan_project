@@ -31,7 +31,7 @@ class Group(Base):
     # New fields
     student_count: Mapped[int] = mapped_column(Integer, default=0)
     education_shape: Mapped[EducationShape] = mapped_column(
-        SqEnum(EducationShape), default=EducationShape.KUNDUZGI
+        String, default=EducationShape.KUNDUZGI
     )
 
     # Lab Split Flag
