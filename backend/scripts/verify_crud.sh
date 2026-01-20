@@ -1,6 +1,11 @@
 #!/bin/bash
 
-BASE_URL="http://localhost:8000/api/v1"
+# Load env vars from ../.env if it exists
+if [ -f "$(dirname "$0")/../.env" ]; then
+    export $(grep -v '^#' "$(dirname "$0")/../.env" | xargs)
+fi
+
+BASE_URL=${BASE_URL:-"http://localhost:8000/api/v1"}
 EMAIL="admin@example.com"
 PASSWORD="admin"
 

@@ -5,7 +5,9 @@ Ro'yxatdan o'tish (register), login qilish va ma'lumot olishni to'liq tekshiruvc
 import requests
 import time
 
-base_url = "http://localhost:8000/api/v1"
+import os
+
+base_url = os.getenv("BASE_URL", "http://localhost:8000/api/v1")
 email = f"verifier_{int(time.time())}@example.com"
 password = "testpassword123"
 

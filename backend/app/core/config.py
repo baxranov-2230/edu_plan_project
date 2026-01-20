@@ -2,10 +2,12 @@ from typing import List, Union
 from pydantic import AnyHttpUrl, validator
 from pydantic_settings import BaseSettings
 
+
 class Settings(BaseSettings):
     PROJECT_NAME: str
     API_V1_STR: str = "/api/v1"
-    
+    BASE_URL: str = "http://localhost:8000/api/v1"
+
     # CORS
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
@@ -19,14 +21,15 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str
-    
+
     # Security
     SECRET_KEY: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8 # 8 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
     class Config:
         case_sensitive = True
         env_file = ".env"
         extra = "ignore"
+
 
 settings = Settings()

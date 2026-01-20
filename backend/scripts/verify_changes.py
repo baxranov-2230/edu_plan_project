@@ -15,7 +15,9 @@ import urllib.parse
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-BASE_URL = "http://localhost:8000/api/v1"
+from app.core.config import settings
+
+BASE_URL = settings.BASE_URL
 
 
 def make_request(method, url, data=None):
