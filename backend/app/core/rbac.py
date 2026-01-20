@@ -28,6 +28,16 @@ class Permissions:
     ROLE_UPDATE = "role:update"
     ROLE_DELETE = "role:delete"
 
+    SUBJECT_READ = "subject:read"
+    SUBJECT_CREATE = "subject:create"
+    SUBJECT_UPDATE = "subject:update"
+    SUBJECT_DELETE = "subject:delete"
+
+    EDUPLAN_READ = "eduplan:read"
+    EDUPLAN_CREATE = "eduplan:create"
+    EDUPLAN_UPDATE = "eduplan:update"
+    EDUPLAN_DELETE = "eduplan:delete"
+
     SPECIALITY_READ = "speciality:read"
     SPECIALITY_CREATE = "speciality:create"
     SPECIALITY_UPDATE = "speciality:update"
@@ -41,6 +51,8 @@ ROLE_PERMISSIONS: Dict[str, List[str]] = {
         Permissions.DEPARTMENT_READ,
         Permissions.SPECIALITY_READ,
         Permissions.GROUP_READ,
+        Permissions.SUBJECT_READ,
+        Permissions.EDUPLAN_READ,
     ],
     "teacher": [
         Permissions.FACULTY_READ,
@@ -73,6 +85,14 @@ ROLE_PERMISSIONS: Dict[str, List[str]] = {
         Permissions.GROUP_CREATE,
         Permissions.GROUP_UPDATE,
         Permissions.GROUP_DELETE,
+        Permissions.SUBJECT_READ,
+        Permissions.SUBJECT_CREATE,
+        Permissions.SUBJECT_UPDATE,
+        Permissions.SUBJECT_DELETE,
+        Permissions.EDUPLAN_READ,
+        Permissions.EDUPLAN_CREATE,
+        Permissions.EDUPLAN_UPDATE,
+        Permissions.EDUPLAN_DELETE,
     ],
 }
 

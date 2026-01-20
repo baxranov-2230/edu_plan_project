@@ -2,6 +2,7 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import deps
+from app.core.rbac import Permissions
 from app.schemas.edu_plan import EduPlan, EduPlanCreate, EduPlanUpdate
 from app.services.edu_plan_service import edu_plan_service
 from app.models.user import User
@@ -14,7 +15,7 @@ async def read_edu_plans(
     db: AsyncSession = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.EDUPLAN_READ)),
 ) -> Any:
     """
     O'quv rejalari ro'yxatini olish.
@@ -27,7 +28,7 @@ async def create_edu_plan(
     *,
     db: AsyncSession = Depends(deps.get_db),
     edu_plan_in: EduPlanCreate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.EDUPLAN_CREATE)),
 ) -> Any:
     """
     Yangi o'quv rejasi yaratish.
@@ -41,7 +42,7 @@ async def update_edu_plan(
     db: AsyncSession = Depends(deps.get_db),
     id: int,
     edu_plan_in: EduPlanUpdate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.EDUPLAN_UPDATE)),
 ) -> Any:
     """
     O'quv rejasini yangilash.
@@ -57,7 +58,7 @@ async def delete_edu_plan(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.EDUPLAN_DELETE)),
 ) -> Any:
     """
     O'quv rejasini o'chirish.

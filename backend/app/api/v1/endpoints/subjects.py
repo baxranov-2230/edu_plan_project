@@ -2,6 +2,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import deps
+from app.core.rbac import Permissions
 from app.schemas.subject import Subject, SubjectCreate, SubjectUpdate, SubjectList
 from app.services.subject_service import subject_service
 from app.models.user import User
@@ -15,7 +16,7 @@ async def read_subjects(
     page: int = 1,
     size: int = 20,
     search: str | None = None,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.SUBJECT_READ)),
 ) -> Any:
     """
     Fanlar ro'yxatini olish.
@@ -32,7 +33,7 @@ async def create_subject(
     *,
     db: AsyncSession = Depends(deps.get_db),
     subject_in: SubjectCreate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.SUBJECT_CREATE)),
 ) -> Any:
     """
     Yangi fan yaratish.
@@ -46,7 +47,7 @@ async def update_subject(
     db: AsyncSession = Depends(deps.get_db),
     id: int,
     subject_in: SubjectUpdate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.SUBJECT_UPDATE)),
 ) -> Any:
     subject = await subject_service.get(db, id=id)
     if not subject:
@@ -59,7 +60,7 @@ async def read_subject(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.SUBJECT_READ)),
 ) -> Any:
     subject = await subject_service.get(db, id=id)
     if not subject:
@@ -72,6 +73,6 @@ async def delete_subject(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.SUBJECT_DELETE)),
 ) -> Any:
     return await subject_service.delete(db, id=id)
