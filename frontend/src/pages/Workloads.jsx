@@ -481,6 +481,12 @@ const Workloads = () => {
                 <DialogContent className="pt-4">
                     <Box className="flex flex-col gap-4 mt-2">
                         <Box className="flex flex-col gap-4">
+                            <TextField
+                                label="Yuklama Nomi"
+                                fullWidth
+                                value={batchData.name || ''}
+                                onChange={(e) => setBatchData({ ...batchData, name: e.target.value })}
+                            />
                             <FormControl fullWidth>
                                 <InputLabel>O'quv Reja (Edu Plan)</InputLabel>
                                 <Select

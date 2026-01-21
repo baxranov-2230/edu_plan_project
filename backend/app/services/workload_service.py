@@ -38,7 +38,7 @@ class WorkloadService:
             selectinload(Workload.edu_plan),
             selectinload(Workload.group),
             selectinload(Workload.stream).selectinload(Stream.groups),
-        )
+        ).order_by(Workload.id.desc())
 
         if edu_plan_id:
             query = query.where(Workload.edu_plan_id == edu_plan_id)
