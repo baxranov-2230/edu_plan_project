@@ -2,6 +2,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import deps
+from app.core.rbac import Permissions
 from app.schemas.stream import Stream, StreamCreate, StreamUpdate, StreamList
 from app.services.stream_service import stream_service
 from app.models.user import User
@@ -15,7 +16,7 @@ async def read_streams(
     page: int = 1,
     size: int = 20,
     search: str | None = None,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.STREAM_READ)),
 ) -> Any:
     """
     Oqimlar ro'yxatini olish.
@@ -32,7 +33,7 @@ async def create_stream(
     *,
     db: AsyncSession = Depends(deps.get_db),
     stream_in: StreamCreate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.STREAM_CREATE)),
 ) -> Any:
     """
     Yangi oqim yaratish.
@@ -46,7 +47,7 @@ async def update_stream(
     db: AsyncSession = Depends(deps.get_db),
     id: int,
     stream_in: StreamUpdate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.STREAM_UPDATE)),
 ) -> Any:
     stream = await stream_service.get(db, id=id)
     if not stream:
@@ -59,7 +60,7 @@ async def read_stream(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.STREAM_READ)),
 ) -> Any:
     stream = await stream_service.get(db, id=id)
     if not stream:
@@ -72,6 +73,6 @@ async def delete_stream(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.STREAM_DELETE)),
 ) -> Any:
     return await stream_service.delete(db, id=id)
