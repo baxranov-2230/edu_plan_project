@@ -2,6 +2,7 @@ from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import deps
+from app.core.rbac import Permissions
 from app.schemas.workload import (
     Workload,
     WorkloadCreate,
@@ -22,7 +23,7 @@ async def read_workloads(
     page: int = 1,
     size: int = 20,
     edu_plan_id: Optional[int] = Query(None, description="Filter by EduPlan ID"),
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.WORKLOAD_READ)),
 ) -> Any:
     """
     Yuklamalar ro'yxatini olish.
@@ -39,7 +40,7 @@ async def create_workload(
     *,
     db: AsyncSession = Depends(deps.get_db),
     workload_in: WorkloadCreate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.WORKLOAD_CREATE)),
 ) -> Any:
     """
     Yangi yuklama yaratish.
@@ -52,7 +53,7 @@ async def create_batch_workload(
     *,
     db: AsyncSession = Depends(deps.get_db),
     batch_in: WorkloadBatchCreate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.WORKLOAD_CREATE)),
 ) -> Any:
     """
     Yuklamalarni ommaviy yaratish (Batch).
@@ -65,7 +66,7 @@ async def update_workload_group(
     *,
     db: AsyncSession = Depends(deps.get_db),
     group_update: WorkloadGroupUpdate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.WORKLOAD_UPDATE)),
 ) -> Any:
     """
     Fan bo'yicha bir nechta yuklamalarni yangilash (Global Tahrirlash).
@@ -79,7 +80,7 @@ async def delete_workload_group(
     *,
     db: AsyncSession = Depends(deps.get_db),
     subject_id: int,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.WORKLOAD_DELETE)),
 ) -> Any:
     """
     Fan bo'yicha bir nechta yuklamalarni o'chirish.
@@ -93,7 +94,7 @@ async def read_workload(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.WORKLOAD_READ)),
 ) -> Any:
     """
     Yuklamani ID orqali olish.
@@ -110,7 +111,7 @@ async def update_workload(
     db: AsyncSession = Depends(deps.get_db),
     id: int,
     workload_in: WorkloadUpdate,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.WORKLOAD_UPDATE)),
 ) -> Any:
     """
     Yuklamani yangilash.
@@ -127,7 +128,7 @@ async def delete_workload(
     *,
     db: AsyncSession = Depends(deps.get_db),
     id: int,
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.PermissionChecker(Permissions.WORKLOAD_DELETE)),
 ) -> Any:
     """
     Yuklamani o'chirish.

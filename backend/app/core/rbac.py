@@ -43,6 +43,11 @@ class Permissions:
     STREAM_UPDATE = "stream:update"
     STREAM_DELETE = "stream:delete"
 
+    WORKLOAD_READ = "workload:read"
+    WORKLOAD_CREATE = "workload:create"
+    WORKLOAD_UPDATE = "workload:update"
+    WORKLOAD_DELETE = "workload:delete"
+
     SPECIALITY_READ = "speciality:read"
     SPECIALITY_CREATE = "speciality:create"
     SPECIALITY_UPDATE = "speciality:update"
@@ -59,6 +64,7 @@ ROLE_PERMISSIONS: Dict[str, List[str]] = {
         Permissions.SUBJECT_READ,
         Permissions.EDUPLAN_READ,
         Permissions.STREAM_READ,
+        Permissions.WORKLOAD_READ,
     ],
     "teacher": [
         Permissions.FACULTY_READ,
@@ -103,6 +109,10 @@ ROLE_PERMISSIONS: Dict[str, List[str]] = {
         Permissions.STREAM_CREATE,
         Permissions.STREAM_UPDATE,
         Permissions.STREAM_DELETE,
+        Permissions.WORKLOAD_READ,
+        Permissions.WORKLOAD_CREATE,
+        Permissions.WORKLOAD_UPDATE,
+        Permissions.WORKLOAD_DELETE,
     ],
 }
 
