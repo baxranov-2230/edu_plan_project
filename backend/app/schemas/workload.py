@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from app.models.workload import LoadType
 from .subject import Subject
 from .group import Group
-from .subgroup import Subgroup
 from .stream import Stream
 from .edu_plan import EduPlan
 
@@ -65,7 +64,6 @@ class Workload(WorkloadBase):
     edu_plan: Optional[EduPlan] = None
     stream: Optional[Stream] = None
     group: Optional[Group] = None
-    subgroup: Optional[Subgroup] = None
 
     class Config:
         from_attributes = True

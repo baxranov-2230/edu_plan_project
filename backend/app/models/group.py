@@ -35,9 +35,8 @@ class Group(Base):
     )
 
     # Lab Split Flag
-    he_lab_split: Mapped[bool] = mapped_column(Boolean, default=False)
+    has_lab_subgroups: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Relationships
     speciality = relationship("Speciality", backref="groups")
-    subgroups = relationship("Subgroup", back_populates="group")
     # stream_groups relationship will be defined in StreamGroup or via backref

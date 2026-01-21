@@ -9,6 +9,5 @@ from app.models.group import Group
 from app.models.teacher import Teacher
 from app.models.subject import Subject
 from app.models.stream import Stream, StreamGroup
-from app.models.subgroup import Subgroup
 from app.models.workload import Workload
 from app.models.edu_plan import EduPlan

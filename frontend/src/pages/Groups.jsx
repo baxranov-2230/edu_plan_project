@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
-    Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, 
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+    Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
     CircularProgress, MenuItem, FormControl, InputLabel, Select, Pagination, PaginationItem,
     Box, Typography, Chip, FormControlLabel, Checkbox
 } from '@mui/material';
@@ -19,18 +19,18 @@ const Groups = () => {
     const [search, setSearch] = useState('');
     const [open, setOpen] = useState(false);
     const [editItem, setEditItem] = useState(null);
-    const [formData, setFormData] = useState({ 
-        name: '', 
-        speciality_id: '', 
+    const [formData, setFormData] = useState({
+        name: '',
+        speciality_id: '',
         course: 1,
         student_count: 0,
         education_shape: 'kunduzgi',
-        he_lab_split: false
+        has_lab_subgroups: false
     });
 
     const { data, isLoading } = useGroups({ page, size, search });
     const { data: specialitiesData } = useSpecialities({ page: 1, size: 100 });
-    
+
     const createMutation = useCreateGroup();
     const updateMutation = useUpdateGroup();
     const deleteMutation = useDeleteGroup();
@@ -42,23 +42,23 @@ const Groups = () => {
     const handleOpen = (item = null) => {
         if (item) {
             setEditItem(item);
-            setFormData({ 
-                name: item.name, 
-                speciality_id: item.speciality_id, 
+            setFormData({
+                name: item.name,
+                speciality_id: item.speciality_id,
                 course: item.course,
                 student_count: item.student_count || 0,
                 education_shape: item.education_shape || 'kunduzgi',
-                he_lab_split: item.he_lab_split || false
+                has_lab_subgroups: item.has_lab_subgroups || false
             });
         } else {
             setEditItem(null);
-            setFormData({ 
-                name: '', 
-                speciality_id: '', 
+            setFormData({
+                name: '',
+                speciality_id: '',
                 course: 1,
                 student_count: 0,
                 education_shape: 'kunduzgi',
-                he_lab_split: false
+                has_lab_subgroups: false
             });
         }
         setOpen(true);
@@ -70,7 +70,7 @@ const Groups = () => {
         const payload = { ...formData };
         payload.course = parseInt(payload.course);
         payload.student_count = parseInt(payload.student_count);
-        
+
         if (editItem) {
             await updateMutation.mutateAsync({ id: editItem.id, data: payload });
         } else {
@@ -91,9 +91,9 @@ const Groups = () => {
                 <Typography variant="h5" className="font-bold text-slate-800 dark:text-white">
                     Guruhlar
                 </Typography>
-                <Button 
-                    variant="contained" 
-                    color="primary" 
+                <Button
+                    variant="contained"
+                    color="primary"
                     startIcon={<AddIcon />}
                     onClick={() => handleOpen()}
                     className="bg-emerald-600 hover:bg-emerald-700"
@@ -147,7 +147,7 @@ const Groups = () => {
                                     <Chip label={item.education_shape} size="small" className="uppercase" />
                                 </TableCell>
                                 <TableCell>
-                                    {item.he_lab_split ? 'Ha' : 'Yo\'q'}
+                                    {item.has_lab_subgroups ? 'Ha' : 'Yo\'q'}
                                 </TableCell>
                                 <TableCell align="right">
                                     <Button size="small" onClick={() => handleOpen(item)}><EditIcon fontSize="small" /></Button>
@@ -157,23 +157,23 @@ const Groups = () => {
                         ))}
                     </TableBody>
                 </Table>
-                
+
                 <Box className="p-4 flex items-center justify-between border-t border-slate-200">
-                     <Select
+                    <Select
                         value={size}
                         size="small"
                         onChange={(e) => {
                             setSize(e.target.value);
                             setPage(1);
                         }}
-                     >
+                    >
                         <MenuItem value={10}>10</MenuItem>
                         <MenuItem value={20}>20</MenuItem>
                         <MenuItem value={50}>50</MenuItem>
-                     </Select>
-                     <Pagination 
-                        count={Math.ceil(total / size) || 1} 
-                        page={page} 
+                    </Select>
+                    <Pagination
+                        count={Math.ceil(total / size) || 1}
+                        page={page}
                         onChange={(e, p) => setPage(p)}
                         shape="rounded"
                         renderItem={(item) => (
@@ -203,14 +203,14 @@ const Groups = () => {
                             value={formData.course}
                             onChange={(e) => setFormData({ ...formData, course: e.target.value })}
                         />
-                         <TextField
+                        <TextField
                             label="Talaba Soni"
                             type="number"
                             fullWidth
                             value={formData.student_count}
                             onChange={(e) => setFormData({ ...formData, student_count: e.target.value })}
                         />
-                         <FormControl fullWidth>
+                        <FormControl fullWidth>
                             <InputLabel>Ta'lim Shakli</InputLabel>
                             <Select
                                 value={formData.education_shape}
@@ -236,12 +236,12 @@ const Groups = () => {
                                 ))}
                             </Select>
                         </FormControl>
-                        
+
                         <FormControlLabel
                             control={
                                 <Checkbox
-                                    checked={formData.he_lab_split}
-                                    onChange={(e) => setFormData({ ...formData, he_lab_split: e.target.checked })}
+                                    checked={formData.has_lab_subgroups}
+                                    onChange={(e) => setFormData({ ...formData, has_lab_subgroups: e.target.checked })}
                                     color="primary"
                                 />
                             }

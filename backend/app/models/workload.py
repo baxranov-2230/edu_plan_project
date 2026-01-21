@@ -38,9 +38,6 @@ class Workload(Base):
     group_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("groups.id"), nullable=True
     )
-    subgroup_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("subgroups.id"), nullable=True
-    )
 
     # 4. O'QUV REJA (Optional, if grouping is used)
     edu_plan_id: Mapped[Optional[int]] = mapped_column(
@@ -56,4 +53,3 @@ class Workload(Base):
 
     stream = relationship("Stream", backref="workloads")
     group = relationship("Group", backref="workloads")
-    subgroup = relationship("Subgroup", back_populates="workloads")

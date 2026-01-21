@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.workload import Workload, LoadType
 from app.models.group import Group
 from app.models.stream import Stream
-from app.models.subgroup import Subgroup
 from app.schemas.workload import (
     WorkloadCreate,
     WorkloadUpdate,
@@ -37,9 +36,8 @@ class WorkloadService:
         query = select(Workload).options(
             selectinload(Workload.subject),
             selectinload(Workload.edu_plan),
-            selectinload(Workload.stream).selectinload(Stream.groups),
             selectinload(Workload.group),
-            selectinload(Workload.subgroup),
+            selectinload(Workload.stream).selectinload(Stream.groups),
         )
 
         if edu_plan_id:
@@ -59,7 +57,6 @@ class WorkloadService:
                 selectinload(Workload.edu_plan),
                 selectinload(Workload.stream).selectinload(Stream.groups),
                 selectinload(Workload.group),
-                selectinload(Workload.subgroup),
             )
         )
         result = await db.execute(query)
@@ -128,48 +125,30 @@ class WorkloadService:
 
             elif item.load_type == LoadType.LAB:
                 # Create for each group, checking for split
-                for group_id in item.group_ids:
-                    # Fetch group to check split
-                    group_result = await db.execute(
-                        select(Group).where(Group.id == group_id)
+                # Fetch all groups at once to check for split flag
+                if item.group_ids:
+                    group_results = await db.execute(
+                        select(Group).where(Group.id.in_(item.group_ids))
                     )
-                    group = group_result.scalars().first()
+                    groups_map = {
+                        group.id: group for group in group_results.scalars().all()
+                    }
+                else:
+                    groups_map = {}
 
-                    if group and group.he_lab_split:
-                        # Ensure subgroups exist or fetch them
-                        subgroups_result = await db.execute(
-                            select(Subgroup).where(Subgroup.group_id == group_id)
-                        )
-                        subgroups = subgroups_result.scalars().all()
+                for group_id in item.group_ids:
+                    group = groups_map.get(group_id)
 
-                        if not subgroups:
-                            # Create default subgroups if none exist
-                            sg1 = Subgroup(name="1-guruhcha", group_id=group_id)
-                            sg2 = Subgroup(name="2-guruhcha", group_id=group_id)
-                            db.add(sg1)
-                            db.add(sg2)
-                            await db.flush()  # Get IDs
-                            subgroups = [sg1, sg2]
-                        elif len(subgroups) == 1:
-                            # Should have at least 2? Let's just create one more if only 1
-                            sg2 = Subgroup(name="2-guruhcha", group_id=group_id)
-                            db.add(sg2)
-                            await db.flush()
-                            subgroups.append(sg2)
+                    final_hours = item.hours
+                    if group and group.has_lab_subgroups:
+                        # Double the hours if group has lab subgroups
+                        final_hours = item.hours * 2
 
-                        # Create workload for each subgroup
-                        for sg in subgroups[:2]:
-                            workload = Workload(
-                                **common_data, group_id=group_id, subgroup_id=sg.id
-                            )
-                            db.add(workload)
-                            created_workloads.append(workload)
-
-                    else:
-                        # No split, just group
-                        workload = Workload(**common_data, group_id=group_id)
-                        db.add(workload)
-                        created_workloads.append(workload)
+                    # Create single workload
+                    workload = Workload(**common_data, group_id=group_id)
+                    workload.hours = final_hours  # Override hours
+                    db.add(workload)
+                    created_workloads.append(workload)
 
         await db.commit()
 
@@ -186,7 +165,6 @@ class WorkloadService:
                 selectinload(Workload.edu_plan),
                 selectinload(Workload.stream).selectinload(Stream.groups),
                 selectinload(Workload.group),
-                selectinload(Workload.subgroup),
             )
         )
         result = await db.execute(query)

@@ -576,7 +576,7 @@ const Workloads = () => {
                                         <FormControl fullWidth size="small">
                                             <InputLabel>Guruhlar</InputLabel>
                                             <Select multiple value={batchData.labGroups} label="Guruhlar" onChange={(e) => setBatchData({ ...batchData, labGroups: e.target.value })} renderValue={(s) => s.length + ' ta tanlandi'}>
-                                                {groups.map((g) => <MenuItem key={g.id} value={g.id}>{g.name} {g.he_lab_split && '(Bo\'linadi)'}</MenuItem>)}
+                                                {groups.map((g) => <MenuItem key={g.id} value={g.id}>{g.name} {g.has_lab_subgroups && '(Bo\'linadi)'}</MenuItem>)}
                                             </Select>
                                         </FormControl>
                                     </Box>
