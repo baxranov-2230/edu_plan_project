@@ -10,7 +10,6 @@ user_roles = Table(
     Column("user_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
     Column("role_id", ForeignKey("roles.id", ondelete="CASCADE"), primary_key=True),
 )
-from sqlalchemy import ForeignKey
 
 
 class User(Base):
@@ -27,7 +26,6 @@ class User(Base):
     name: Mapped[str | None] = mapped_column(nullable=True)
     hashed_password: Mapped[str] = mapped_column()
     is_active: Mapped[bool] = mapped_column(default=True)
-    is_superuser: Mapped[bool] = mapped_column(default=False)
     is_superuser: Mapped[bool] = mapped_column(default=False)
     # role column removed, using relationship below
 

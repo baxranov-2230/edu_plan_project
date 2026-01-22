@@ -16,7 +16,6 @@ class WorkloadBase(BaseModel):
 
     stream_id: Optional[int] = None
     group_id: Optional[int] = None
-    subgroup_id: Optional[int] = None
 
 
 class WorkloadCreate(WorkloadBase):
@@ -32,7 +31,6 @@ class WorkloadUpdate(BaseModel):
 
     stream_id: Optional[int] = None
     group_id: Optional[int] = None
-    subgroup_id: Optional[int] = None
 
 
 class BatchWorkloadItem(BaseModel):
